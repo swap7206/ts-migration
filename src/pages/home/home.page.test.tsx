@@ -92,7 +92,10 @@ const mockContext = {
 
 jest.mock('../../context/pokemonContext/pokmon.context', () => ({
   __esModule: true,
-  default: React.createContext(mockContext)
+  default: {
+    Provider: ({ children }: any) => children,
+    Consumer: ({ children }: any) => children(mockContext)
+  }
 }));
 
 import HomePage from './home.page';

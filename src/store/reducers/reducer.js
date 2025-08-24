@@ -18,7 +18,7 @@ export const reducer = (state, action) => {
     switch (action.type) {
         case "ACTIONS.SET_POKEMON_LIST":
             return {
-                ...state, pokemonsList: [...state.pokemonsList, ...action.payload]
+                ...state, pokemonsList: [...state.pokemonsList, ...(action.payload || [])]
             };
         case "ACTIONS.SET_ALL_POKEMON_LIST":
             return {

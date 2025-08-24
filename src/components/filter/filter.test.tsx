@@ -4,43 +4,34 @@ import '@testing-library/jest-dom';
 
 // Mock RSuite components
 jest.mock('rsuite', () => ({
-  Row: ({ children, ...props }: any) => <div data-testid="row" {...props}>{children}</div>,
-  Col: ({ children, ...props }: any) => <div data-testid="col" {...props}>{children}</div>,
-  Input: ({ placeholder, className, onChange, ...props }: any) => (
-    <input 
-      data-testid="search-input"
-      placeholder={placeholder}
-      className={className}
-      onChange={onChange}
-      {...props}
-    />
-  ),
-  InputGroup: ({ children, ...props }: any) => (
-    <div data-testid="input-group" {...props}>
-      {children}
-    </div>
-  ),
-  'InputGroup.Button': ({ children }: any) => (
-    <button data-testid="search-button">
-      {children}
-    </button>
-  ),
-  CheckPicker: ({ data, placeholder, onChange, ...props }: any) => (
-    <div data-testid="check-picker" {...props}>
-      <input 
-        data-testid="check-picker-input"
-        placeholder={placeholder}
-        onChange={(e) => onChange && onChange(e.target.value)}
-      />
-      <div data-testid="check-picker-data">
-        {data?.map((item: any, index: number) => (
-          <div key={index} data-testid={`option-${item.value}`}>
-            {item.label}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  Row: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'row', ...props }, children),
+  Col: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'col', ...props }, children),
+  Input: ({ placeholder, className, onChange, ...props }: any) => 
+    React.createElement('input', { 
+      'data-testid': 'search-input',
+      placeholder,
+      className,
+      onChange,
+      ...props
+    }),
+  InputGroup: ({ children, ...props }: any) => 
+    React.createElement('div', { 'data-testid': 'input-group', ...props }, children),
+  'InputGroup.Button': ({ children }: any) => 
+    React.createElement('button', { 'data-testid': 'search-button' }, children),
+  CheckPicker: ({ data, placeholder, onChange, ...props }: any) => 
+    React.createElement('div', { 'data-testid': 'check-picker', ...props }, [
+      React.createElement('input', { 
+        key: 'input',
+        'data-testid': 'check-picker-input',
+        placeholder,
+        onChange: (e: any) => onChange && onChange(e.target.value)
+      }),
+      React.createElement('div', { key: 'data', 'data-testid': 'check-picker-data' }, 
+        data?.map((item: any, index: number) => 
+          React.createElement('div', { key: index, 'data-testid': `option-${item.value}` }, item.label)
+        )
+      )
+    ])
 }));
 
 // Mock the search icon
@@ -62,6 +53,30 @@ jest.mock('rxjs', () => ({
       subscribe: jest.fn()
     }))
   }))
+}));
+
+// Mock PokemonContext
+const mockContextValue = {
+  state: {
+    allPokemonsList: [
+      { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/' },
+      { name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon/2/' }
+    ],
+    pokemonsTypes: ['fire', 'water', 'grass'],
+    pokemonGenderList: ['male', 'female']
+  },
+  dispatch: jest.fn(),
+  getPokemonData: jest.fn(),
+  setAppLoading: jest.fn(),
+  getPokemonDetailsListByUrl: jest.fn()
+};
+
+jest.mock('../../context/pokemonContext/pokmon.context', () => ({
+  __esModule: true,
+  default: {
+    Provider: ({ children }: any) => children,
+    Consumer: ({ children }: any) => children(mockContextValue)
+  }
 }));
 
 import AppFilter from './filter';
@@ -87,13 +102,10 @@ describe('AppFilter', () => {
   });
 
   it('renders all filter components', () => {
+    const mockIsFilterEnable = jest.fn();
     render(
       <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        onTypeChange={mockOnTypeChange}
-        onGenderChange={mockOnGenderChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
+        isFilterEnable={mockIsFilterEnable}
       />
     );
 
