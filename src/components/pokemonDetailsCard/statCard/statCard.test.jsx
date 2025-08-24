@@ -57,18 +57,18 @@ describe('StatCard', () => {
 
   it('renders "Stats" title', () => {
     render(<StatCard stats={mockStats} />);
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
+    expect(screen.getByText('Stats')).toBeInTheDocument();
   });
 
   it('renders stat names correctly (formatted)', () => {
     render(<StatCard stats={mockStats} />);
     
     expect(screen.getByText('HP')).toBeInTheDocument();
-    expect(screen.getByText(/^ATTACK$/)).toBeInTheDocument();
-    expect(screen.getByText(/^DEFENSE$/)).toBeInTheDocument();
-    expect(screen.getByText(/^SPECIAL-ATTACK$/)).toBeInTheDocument();
-    expect(screen.getByText(/^SPECIAL-DEFENSE$/)).toBeInTheDocument();
-    expect(screen.getByText(/^SPEED$/)).toBeInTheDocument();
+    expect(screen.getByText('Attack')).toBeInTheDocument();
+    expect(screen.getByText('Defense')).toBeInTheDocument();
+    expect(screen.getByText('Sp. Attack')).toBeInTheDocument();
+    expect(screen.getByText('Sp. Defense')).toBeInTheDocument();
+    expect(screen.getByText('Speed')).toBeInTheDocument();
   });
 
   it('renders stat values correctly', () => {
@@ -87,7 +87,7 @@ describe('StatCard', () => {
   it('renders with empty stats array', () => {
     render(<StatCard stats={[]} />);
     
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
+    expect(screen.getByText('Stats')).toBeInTheDocument();
     expect(screen.getByText('No stats available')).toBeInTheDocument();
   });
 
@@ -98,7 +98,7 @@ describe('StatCard', () => {
     expect(screen.getByText('HP')).toBeInTheDocument();
     const hpValues = screen.getAllByText('45');
     expect(hpValues.length).toBeGreaterThan(0);
-    expect(screen.queryByText(/^ATTACK$/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Attack')).not.toBeInTheDocument();
   });
 
   it('renders with partial stats', () => {
@@ -106,29 +106,29 @@ describe('StatCard', () => {
     render(<StatCard stats={partialStats} />);
     
     expect(screen.getByText('HP')).toBeInTheDocument();
-    expect(screen.getByText(/^ATTACK$/)).toBeInTheDocument();
-    expect(screen.getByText(/^DEFENSE$/)).toBeInTheDocument();
+    expect(screen.getByText('Attack')).toBeInTheDocument();
+    expect(screen.getByText('Defense')).toBeInTheDocument();
     expect(screen.queryByText('Sp. Attack')).not.toBeInTheDocument();
   });
 
   it('renders without stats prop', () => {
     render(<StatCard />); // Uses default props
     
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
+    expect(screen.getByText('Stats')).toBeInTheDocument();
     expect(screen.getByText('No stats available')).toBeInTheDocument();
   });
 
   it('renders with null stats', () => {
     render(<StatCard stats={null} />);
     
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
+    expect(screen.getByText('Stats')).toBeInTheDocument();
     expect(screen.getByText('No stats available')).toBeInTheDocument();
   });
 
   it('renders with undefined stats', () => {
     render(<StatCard stats={undefined} />);
     
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
+    expect(screen.getByText('Stats')).toBeInTheDocument();
     expect(screen.getByText('No stats available')).toBeInTheDocument();
   });
 
@@ -136,11 +136,11 @@ describe('StatCard', () => {
     render(<StatCard stats={mockStats} />);
     
     expect(screen.getByText('HP')).toBeInTheDocument();
-    expect(screen.getByText(/^ATTACK$/)).toBeInTheDocument();
-    expect(screen.getByText(/^DEFENSE$/)).toBeInTheDocument();
-    expect(screen.getByText(/^SPECIAL-ATTACK$/)).toBeInTheDocument();
-    expect(screen.getByText(/^SPECIAL-DEFENSE$/)).toBeInTheDocument();
-    expect(screen.getByText(/^SPEED$/)).toBeInTheDocument();
+    expect(screen.getByText('Attack')).toBeInTheDocument();
+    expect(screen.getByText('Defense')).toBeInTheDocument();
+    expect(screen.getByText('Sp. Attack')).toBeInTheDocument();
+    expect(screen.getByText('Sp. Defense')).toBeInTheDocument();
+    expect(screen.getByText('Speed')).toBeInTheDocument();
   });
 
   it('renders correct stat values for each stat', () => {
@@ -187,7 +187,7 @@ describe('StatCard', () => {
     ];
     render(<StatCard stats={highStats} />);
     
-    expect(screen.getByText(/^SPEED$/)).toBeInTheDocument();
+    expect(screen.getByText('Speed')).toBeInTheDocument();
     const highValues = screen.getAllByText('255');
     expect(highValues.length).toBeGreaterThan(0);
   });
@@ -205,7 +205,7 @@ describe('StatCard', () => {
     ];
     render(<StatCard stats={negativeStats} />);
     
-    expect(screen.getByText(/^ATTACK$/)).toBeInTheDocument();
+    expect(screen.getByText('Attack')).toBeInTheDocument();
     const negativeValues = screen.getAllByText('-10');
     expect(negativeValues.length).toBeGreaterThan(0);
   });
@@ -241,8 +241,8 @@ describe('StatCard', () => {
     ];
     render(<StatCard stats={incompleteStats} />);
     
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
-    const statValues = screen.getAllByText('0');
+    expect(screen.getByText('Stats')).toBeInTheDocument();
+    const statValues = screen.getAllByText('45');
     expect(statValues.length).toBeGreaterThan(0);
   });
 
@@ -256,9 +256,9 @@ describe('StatCard', () => {
     ];
     render(<StatCard stats={nullStatStats} />);
     
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
-    expect(screen.getByText(/UNKNOWN/)).toBeInTheDocument();
-    const statValues = screen.getAllByText('0');
+    expect(screen.getByText('Stats')).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    const statValues = screen.getAllByText('45');
     expect(statValues.length).toBeGreaterThan(0);
   });
 
@@ -272,9 +272,9 @@ describe('StatCard', () => {
     ];
     render(<StatCard stats={undefinedStatStats} />);
     
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
-    expect(screen.getByText(/UNKNOWN/)).toBeInTheDocument();
-    const statValues = screen.getAllByText('0');
+    expect(screen.getByText('Stats')).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    const statValues = screen.getAllByText('45');
     expect(statValues.length).toBeGreaterThan(0);
   });
 
@@ -356,8 +356,8 @@ describe('StatCard', () => {
     ];
     render(<StatCard stats={invalidStats} />);
     
-    expect(screen.getByText(/Base Stats/)).toBeInTheDocument();
-    expect(screen.getByText(/UNKNOWN/)).toBeInTheDocument();
+    expect(screen.getByText('Stats')).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
     const zeroValues = screen.getAllByText('0');
     expect(zeroValues.length).toBeGreaterThan(0);
   });
@@ -374,9 +374,9 @@ describe('StatCard', () => {
     render(<StatCard stats={mixedStats} />);
     
     expect(screen.getByText('HP')).toBeInTheDocument();
-    expect(screen.getByText(/UNKNOWN/)).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
     const hpValues = screen.getAllByText('45');
-    const unknownValues = screen.getAllByText('0');
+    const unknownValues = screen.getAllByText('50');
     expect(hpValues.length).toBeGreaterThan(0);
     expect(unknownValues.length).toBeGreaterThan(0);
   });

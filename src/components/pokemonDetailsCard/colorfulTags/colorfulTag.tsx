@@ -3,7 +3,7 @@ import { getPokcolor } from '../../../constants/pokemon.types';
 import "./colorfulTags.scss";
 
 interface ColorfulTagProps {
-  text: string;
+  text?: string;
   className?: string;
   type?: any;
 }
@@ -21,6 +21,7 @@ const ColorfulTag: React.FC<ColorfulTagProps> = ({
             background: getPokcolor(type)
           }} 
           className="colorful-tag"
+          data-testid="colorful-tag"
         >
           {text}
         </span>

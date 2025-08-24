@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import PokemonCard from './pokemonCard.js';
+import PokemonCard from './pokemonCard.tsx';
 
 describe('PokemonCard', () => {
   const mockPokemon = {

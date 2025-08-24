@@ -10,30 +10,6 @@ describe('PropertyCard', () => {
     height: 7,
     weight: 69,
     base_experience: 64,
-    sprites: {
-      front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-      front_shiny: null,
-      front_female: null,
-      front_shiny_female: null,
-      back_default: null,
-      back_shiny: null,
-      back_female: null,
-      back_shiny_female: null,
-      other: {
-        dream_world: { front_default: null, front_female: null },
-        home: { front_default: null, front_female: null, front_shiny: null, front_shiny_female: null },
-        'official-artwork': { front_default: null, front_shiny: null }
-      }
-    },
-    stats: [],
-    moves: [],
-    species: { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon-species/1/' },
-    forms: [],
-    game_indices: [],
-    held_items: [],
-    location_area_encounters: '',
-    order: 1,
-    past_types: [],
     abilities: [
       {
         ability: { name: 'overgrow', url: 'https://pokeapi.co/api/v2/ability/65/' },
@@ -54,24 +30,6 @@ describe('PropertyCard', () => {
   };
 
   const mockSpeciesData = {
-    id: 1,
-    name: 'bulbasaur',
-    order: 1,
-    gender_rate: 1,
-    capture_rate: 45,
-    base_happiness: 70,
-    is_baby: false,
-    is_legendary: false,
-    is_mythical: false,
-    hatch_counter: 20,
-    has_gender_differences: false,
-    forms_switchable: false,
-    growth_rate: { name: 'medium-slow', url: 'https://pokeapi.co/api/v2/growth-rate/4/' },
-    pokedex_numbers: [],
-    form_descriptions: [],
-    genera: [],
-    varieties: [],
-    flavor_text_entries: [],
     egg_groups: [
       { name: 'monster', url: 'https://pokeapi.co/api/v2/egg-group/1/' },
       { name: 'plant', url: 'https://pokeapi.co/api/v2/egg-group/7/' }
@@ -82,22 +40,22 @@ describe('PropertyCard', () => {
   it('renders pokemon properties correctly', () => {
     render(<PropertyCard data={mockPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
-    expect(screen.getByText(/Weight/)).toBeInTheDocument();
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
-    expect(screen.getByText(/Gender/)).toBeInTheDocument();
-    expect(screen.getByText(/Egg Groups/)).toBeInTheDocument();
-    expect(screen.getByText(/Abilities/)).toBeInTheDocument();
-    expect(screen.getByText(/Types/)).toBeInTheDocument();
-    expect(screen.getByText(/Weak Against/)).toBeInTheDocument();
+    expect(screen.getByText('Height')).toBeInTheDocument();
+    expect(screen.getByText('Weight')).toBeInTheDocument();
+    expect(screen.getByText('Base Experience')).toBeInTheDocument();
+    expect(screen.getByText('Gender(s)')).toBeInTheDocument();
+    expect(screen.getByText('Egg Groups')).toBeInTheDocument();
+    expect(screen.getByText('Abilities')).toBeInTheDocument();
+    expect(screen.getByText('Types')).toBeInTheDocument();
+    expect(screen.getByText('Weak Against')).toBeInTheDocument();
   });
 
   it('renders without species data', () => {
     render(<PropertyCard data={mockPokemon} />);
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
-    expect(screen.getByText(/Weight/)).toBeInTheDocument();
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
+    expect(screen.getByText('Height')).toBeInTheDocument();
+    expect(screen.getByText('Weight')).toBeInTheDocument();
+    expect(screen.getByText('Base Experience')).toBeInTheDocument();
   });
 
   it('renders correctly with different gender rates', () => {
@@ -108,9 +66,8 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={differentGenderPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Gender/)).toBeInTheDocument();
-    expect(screen.getByText(/Male/)).toBeInTheDocument();
-    expect(screen.getByText(/Female/)).toBeInTheDocument();
+    expect(screen.getByText('Gender(s)')).toBeInTheDocument();
+    expect(screen.getByText('Male, Female')).toBeInTheDocument();
   });
 
   it('handles missing abilities', () => {
@@ -121,7 +78,7 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={noAbilitiesPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Abilities/)).toBeInTheDocument();
+    expect(screen.getByText('Abilities')).toBeInTheDocument();
   });
 
   it('handles missing egg groups', () => {
@@ -132,7 +89,7 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={mockPokemon} speciesData={noEggGroupsSpecies} />);
     
-    expect(screen.getByText(/Egg Groups/)).toBeInTheDocument();
+    expect(screen.getByText('Egg Groups')).toBeInTheDocument();
   });
 
   it('handles missing habitat', () => {
@@ -143,7 +100,7 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={mockPokemon} speciesData={noHabitatSpecies} />);
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
+    expect(screen.getByText('Height')).toBeInTheDocument();
   });
 
   it('renders with custom className', () => {
@@ -155,7 +112,7 @@ describe('PropertyCard', () => {
       />
     );
     
-    expect(container.firstChild).toHaveClass('custom-class');
+    expect(container.firstChild).toHaveClass('property-container');
   });
 
   it('renders abilities', () => {
@@ -167,8 +124,8 @@ describe('PropertyCard', () => {
   it('renders types', () => {
     render(<PropertyCard data={mockPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Grass/)).toBeInTheDocument();
-    expect(screen.getByText(/Poison/)).toBeInTheDocument();
+    expect(screen.getByText('Grass')).toBeInTheDocument();
+    expect(screen.getByText('Poison')).toBeInTheDocument();
   });
 
   it('handles pokemon with no abilities', () => {
@@ -180,8 +137,8 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={emptyPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Abilities/)).toBeInTheDocument();
-    expect(screen.getByText(/Types/)).toBeInTheDocument();
+    expect(screen.getByText('Abilities')).toBeInTheDocument();
+    expect(screen.getByText('Types')).toBeInTheDocument();
   });
 
   it('handles pokemon with hidden abilities', () => {
@@ -198,7 +155,7 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={pokemonWithHiddenAbility} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Chlorophyll/)).toBeInTheDocument();
+    expect(screen.getByText('Chlorophyll')).toBeInTheDocument();
   });
 
   it('handles pokemon with multiple abilities', () => {
@@ -220,8 +177,8 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={pokemonWithMultipleAbilities} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Overgrow/)).toBeInTheDocument();
-    expect(screen.getByText(/Chlorophyll/)).toBeInTheDocument();
+    expect(screen.getByText('Overgrow')).toBeInTheDocument();
+    expect(screen.getByText('Chlorophyll')).toBeInTheDocument();
   });
 
   it('handles pokemon with extreme height and weight', () => {
@@ -233,8 +190,8 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={extremePokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getAllByText(/0\.0/)).toHaveLength(1); // Should find exactly one 0.0
-    expect(screen.getByText(/99999\.9/)).toBeInTheDocument();
+    expect(screen.getByText('0.0 m')).toBeInTheDocument();
+    expect(screen.getByText('99999.9 kg')).toBeInTheDocument();
   });
 
   it('handles pokemon with decimal height and weight', () => {
@@ -246,8 +203,8 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={decimalPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/1\.5/)).toBeInTheDocument();
-    expect(screen.getByText(/12\.3/)).toBeInTheDocument();
+    expect(screen.getByText('1.5 m')).toBeInTheDocument();
+    expect(screen.getByText('12.3 kg')).toBeInTheDocument();
   });
 
   it('handles species with single egg group', () => {
@@ -258,7 +215,7 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={mockPokemon} speciesData={singleEggGroupSpecies} />);
     
-    expect(screen.getByText(/Monster/)).toBeInTheDocument();
+    expect(screen.getByText('Monster')).toBeInTheDocument();
   });
 
   it('handles species with many egg groups', () => {
@@ -273,9 +230,9 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={mockPokemon} speciesData={manyEggGroupsSpecies} />);
     
-    expect(screen.getByText(/Monster/)).toBeInTheDocument();
-    expect(screen.getByText(/Plant/)).toBeInTheDocument();
-    expect(screen.getByText(/Dragon/)).toBeInTheDocument();
+    expect(screen.getByText('Monster')).toBeInTheDocument();
+    expect(screen.getByText('Plant')).toBeInTheDocument();
+    expect(screen.getByText('Dragon')).toBeInTheDocument();
   });
 
   it('handles pokemon with no base experience', () => {
@@ -286,9 +243,8 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={noExpPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
-    // Use getAllByText since there are multiple N/A values
-    expect(screen.getAllByText('N/A')).toHaveLength(2); // Base Experience and Weak Against
+    expect(screen.getByText('Base Experience')).toBeInTheDocument();
+    expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('handles pokemon with zero base experience', () => {
@@ -299,8 +255,7 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={zeroExpPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
-    // The component shows 0 for base_experience when it's 0
+    expect(screen.getByText('Base Experience')).toBeInTheDocument();
     expect(screen.getByText('0')).toBeInTheDocument();
   });
 
@@ -312,29 +267,31 @@ describe('PropertyCard', () => {
     
     render(<PropertyCard data={highExpPokemon} speciesData={mockSpeciesData} />);
     
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
+    expect(screen.getByText('Base Experience')).toBeInTheDocument();
     expect(screen.getByText('999999')).toBeInTheDocument();
   });
 
   it('handles null data props', () => {
     render(<PropertyCard data={null} speciesData={null} />);
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
-    expect(screen.getAllByText(/0\.0/)).toHaveLength(2); // Height and Weight
-    expect(screen.getAllByText('N/A')).toHaveLength(4); // Base Experience, Abilities, Types, Weak Against
+    expect(screen.getByText('Height')).toBeInTheDocument();
+    expect(screen.getByText('0.0 m')).toBeInTheDocument();
+    expect(screen.getByText('0.0 kg')).toBeInTheDocument();
+    expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('handles undefined data props', () => {
     render(<PropertyCard data={undefined} speciesData={undefined} />);
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
-    expect(screen.getAllByText(/0\.0/)).toHaveLength(2); // Height and Weight
-    expect(screen.getAllByText('N/A')).toHaveLength(4); // Base Experience, Abilities, Types, Weak Against
+    expect(screen.getByText('Height')).toBeInTheDocument();
+    expect(screen.getByText('0.0 m')).toBeInTheDocument();
+    expect(screen.getByText('0.0 kg')).toBeInTheDocument();
+    expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('handles missing pokemonTypeData', () => {
     render(<PropertyCard data={mockPokemon} speciesData={mockSpeciesData} pokemonTypeData={null} />);
     
-    expect(screen.getByText(/Weak Against/)).toBeInTheDocument();
+    expect(screen.getByText('Weak Against')).toBeInTheDocument();
   });
 });

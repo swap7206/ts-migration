@@ -91,7 +91,7 @@ export const getPokcolor = (type: string): string => {
 
 export const getBackground = (pokemonTypes: Array<{ type: { name: string } }>): string => {
   let color = "";
-  if (pokemonTypes.length) {
+  if (pokemonTypes && pokemonTypes.length) {
     const { type: { name: pokemontype1 } } = pokemonTypes[0];
     
     if (pokemonTypes.length > 1) {
@@ -100,12 +100,14 @@ export const getBackground = (pokemonTypes: Array<{ type: { name: string } }>): 
     } else {
       color = getPokcolor(pokemontype1);
     }
+  } else {
+    color = POKEMON_TYPE.unknown.color;
   }
   return color;
 };
 
 export const getPokemonDescription = (data: Array<{ language: { name: string }; flavor_text: string }> = []): string => {
-  if (data.length) {
+  if (data && data.length) {
     const uniqueTextArray: string[] = [];
     return data.reduce((acc, next) => {
       if (next.language.name === "en" && !uniqueTextArray.includes(next.flavor_text)) {

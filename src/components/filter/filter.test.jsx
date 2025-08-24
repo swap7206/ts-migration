@@ -44,8 +44,30 @@ jest.mock('@rsuite/icons/Search', () => {
   };
 });
 
+// Mock the search filter component
+jest.mock('./search/search.filter', () => {
+  return function SearchFilter({ placeholder, onChangeHandler, ...props }: any) {
+    const mockReact = require('react');
+    return mockReact.createElement('div', { 'data-testid': 'search-filter' }, [
+      mockReact.createElement('input', { 
+        key: 'input',
+        'data-testid': 'search-input',
+        placeholder,
+        onChange: onChangeHandler,
+        ...props
+      }),
+      mockReact.createElement('span', { key: 'icon', 'data-testid': 'search-icon' }, '🔍')
+    ]);
+  };
+});
+
 // Mock RxJS
 jest.mock('rxjs', () => ({
+  of: jest.fn(() => ({
+    pipe: jest.fn(() => ({
+      subscribe: jest.fn()
+    }))
+  })),
   debounceTime: jest.fn(() => ({
     pipe: jest.fn(() => ({
       subscribe: jest.fn()
@@ -63,7 +85,12 @@ jest.mock('../../services/common.service', () => ({
   getAllParallelCall: jest.fn(() => Promise.resolve([])),
   getPokemonGenders: jest.fn(() => Promise.resolve([])),
   getPokemonTypes: jest.fn(() => Promise.resolve([])),
-  removeDuplicateBy: jest.fn((arr: any[]) => arr)
+  removeDuplicateBy: jest.fn((arr: any[]) => arr),
+  getPokemonData: jest.fn(() => Promise.resolve([])),
+  getSpeciesDataById: jest.fn(() => Promise.resolve({})),
+  getPokemonTypesById: jest.fn(() => Promise.resolve({})),
+  getPokemonDataById: jest.fn(() => Promise.resolve({})),
+  getPokemonDataByURL: jest.fn(() => Promise.resolve({}))
 }));
 
 import AppFilter from './filter';
@@ -98,9 +125,11 @@ describe('AppFilter', () => {
   it('renders all filter components', () => {
     const mockIsFilterEnable = jest.fn();
     render(
-      <AppFilter 
-        isFilterEnable={mockIsFilterEnable}
-      />
+      <TestWrapper>
+        <AppFilter 
+          isFilterEnable={mockIsFilterEnable}
+        />
+      </TestWrapper>
     );
 
     expect(screen.getByTestId('search-input')).toBeInTheDocument();
@@ -109,7 +138,11 @@ describe('AppFilter', () => {
   });
 
   it('renders with default props', () => {
-    render(<AppFilter />);
+    render(
+      <TestWrapper>
+        <AppFilter />
+      </TestWrapper>
+    );
 
     expect(screen.getByTestId('search-input')).toBeInTheDocument();
     expect(screen.getByTestId('search-input')).toHaveAttribute('placeholder', 'Search...');
@@ -117,11 +150,13 @@ describe('AppFilter', () => {
 
   it('calls onSearchChange when search input changes', () => {
     render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
+      <TestWrapper>
+        <AppFilter 
+          onSearchChange={mockOnSearchChange}
+          typeData={mockTypeData}
+          genderData={mockGenderData}
+        />
+      </TestWrapper>
     );
 
     const searchInput = screen.getByTestId('search-input');
@@ -132,12 +167,14 @@ describe('AppFilter', () => {
 
   it('calls onTypeChange when type selection changes', () => {
     render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        onTypeChange={mockOnTypeChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
+      <TestWrapper>
+        <AppFilter 
+          onSearchChange={mockOnSearchChange}
+          onTypeChange={mockOnTypeChange}
+          typeData={mockTypeData}
+          genderData={mockGenderData}
+        />
+      </TestWrapper>
     );
 
     const typePicker = screen.getAllByTestId('check-picker')[0];
@@ -151,12 +188,14 @@ describe('AppFilter', () => {
 
   it('calls onGenderChange when gender selection changes', () => {
     render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        onGenderChange={mockOnGenderChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
+      <TestWrapper>
+        <AppFilter 
+          onSearchChange={mockOnSearchChange}
+          onGenderChange={mockOnGenderChange}
+          typeData={mockTypeData}
+          genderData={mockGenderData}
+        />
+      </TestWrapper>
     );
 
     const genderPicker = screen.getAllByTestId('check-picker')[1];
@@ -170,10 +209,12 @@ describe('AppFilter', () => {
 
   it('renders type options correctly', () => {
     render(
-      <AppFilter 
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
+      <TestWrapper>
+        <AppFilter 
+          typeData={mockTypeData}
+          genderData={mockGenderData}
+        />
+      </TestWrapper>
     );
 
     expect(screen.getByTestId('option-fire')).toBeInTheDocument();
@@ -183,10 +224,12 @@ describe('AppFilter', () => {
 
   it('renders gender options correctly', () => {
     render(
-      <AppFilter 
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
+      <TestWrapper>
+        <AppFilter 
+          typeData={mockTypeData}
+          genderData={mockGenderData}
+        />
+      </TestWrapper>
     );
 
     expect(screen.getByTestId('option-male')).toBeInTheDocument();

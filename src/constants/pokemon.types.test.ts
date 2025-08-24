@@ -3,7 +3,7 @@ import { POKEMON_TYPE, getPokcolor, getBackground, getPokemonDescription, getCam
 describe('Pokemon Types Constants', () => {
   describe('POKEMON_TYPE', () => {
     it('contains all expected pokemon types', () => {
-      expect(POKEMON_TYPE).toHaveProperty('nomrnal'); // Note: typo in original code
+      expect(POKEMON_TYPE).toHaveProperty('normal');
       expect(POKEMON_TYPE).toHaveProperty('fire');
       expect(POKEMON_TYPE).toHaveProperty('water');
       expect(POKEMON_TYPE).toHaveProperty('electric');
@@ -39,7 +39,7 @@ describe('Pokemon Types Constants', () => {
       expect(POKEMON_TYPE.water.color).toBe('#CBD5ED');
       expect(POKEMON_TYPE.grass.color).toBe('#C0D4C8');
       expect(POKEMON_TYPE.electric.color).toBe('#E2E2A0');
-      expect(POKEMON_TYPE.nomrnal.color).toBe('#DDCBD0'); // Note: typo in original code
+      expect(POKEMON_TYPE.normal.color).toBe('#DDCBD0');
       expect(POKEMON_TYPE.unknown.color).toBe('#C0DFDD');
     });
   });
@@ -50,7 +50,7 @@ describe('Pokemon Types Constants', () => {
       expect(getPokcolor('water')).toBe('#CBD5ED');
       expect(getPokcolor('grass')).toBe('#C0D4C8');
       expect(getPokcolor('electric')).toBe('#E2E2A0');
-      expect(getPokcolor('normal')).toBe('#C0DFDD'); // falls back to unknown
+      expect(getPokcolor('normal')).toBe('#DDCBD0');
     });
 
     it('returns unknown color for unknown types', () => {
@@ -138,14 +138,14 @@ describe('Pokemon Types Constants', () => {
       expect(result).toBe('');
     });
 
-    it('returns undefined for empty array', () => {
+    it('returns empty string for empty array', () => {
       const result = getPokemonDescription([]);
-      expect(result).toBeUndefined();
+      expect(result).toBe('');
     });
 
     it('handles null and undefined', () => {
-      expect(getPokemonDescription(null as any)).toBeUndefined();
-      expect(getPokemonDescription(undefined as any)).toBeUndefined();
+      expect(getPokemonDescription(null as any)).toBe('');
+      expect(getPokemonDescription(undefined as any)).toBe('');
     });
 
     it('removes duplicate English descriptions', () => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ColorfulTag from './colorfulTag.js';
+import ColorfulTag from './colorfulTag.tsx';
 
 describe('ColorfulTag', () => {
   it('renders with basic props', () => {
