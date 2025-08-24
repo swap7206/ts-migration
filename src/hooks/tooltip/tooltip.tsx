@@ -2,48 +2,45 @@ import React, { forwardRef } from 'react';
 import { Whisper, Popover } from 'rsuite';
 
 interface DefaultPopoverProps {
-  content: React.ReactNode;
+  content: string;
   className?: string;
-  [key: string]: any;
 }
 
-const DefaultPopover = forwardRef<HTMLDivElement, DefaultPopoverProps>(
-  ({ content, className, ...props }, ref) => {
-    return (
-      <Popover ref={ref} {...props} className={className} arrow={false}>
-        <p>{content}</p>
-      </Popover>
-    );
-  }
-);
+interface AppTooltipProps {
+  placement?: 'top' | 'bottom' | 'left' | 'right' | 'topStart' | 'topEnd' | 'bottomStart' | 'bottomEnd' | 'leftStart' | 'leftEnd' | 'rightStart' | 'rightEnd';
+  data: string;
+  className?: string;
+  tooltipClass?: string;
+  name?: string;
+}
+
+const DefaultPopover = forwardRef<HTMLDivElement, DefaultPopoverProps>(({ content, className }, ref) => (
+  <Popover ref={ref} className={className}>
+    <p>{content}</p>
+  </Popover>
+));
 
 DefaultPopover.displayName = 'DefaultPopover';
 
-interface AppTooltipProps {
-  placement?: string;
-  data: React.ReactNode;
-  className?: string;
-  name: string;
-  tooltipClass?: string;
-}
-
 const AppTooltip: React.FC<AppTooltipProps> = ({ 
-  placement, 
+  placement = 'top', 
   data, 
   className, 
-  name, 
-  tooltipClass 
-}) => (
-  <Whisper
-    trigger="click"
-    placement={placement}
-    controlId={`control-id-${placement}`}
-    speaker={
-      <DefaultPopover content={data} className={tooltipClass} />
-    }
-  >
-    <div className={className}>{name}</div>
-  </Whisper>
-);
+  tooltipClass, 
+  name 
+}) => {
+  return (
+    <Whisper
+      trigger="click"
+      placement={placement}
+      controlId={`control-id-${placement}`}
+      speaker={
+        <DefaultPopover content={data} className={tooltipClass} />
+      }
+    >
+      <span className={className}>{name || 'Click for more info'}</span>
+    </Whisper>
+  );
+};
 
 export default AppTooltip;

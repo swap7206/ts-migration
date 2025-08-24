@@ -51,8 +51,8 @@ export const getPokemonDataByURL = async (URL) => {
 
 export const numberFormation = (number) => {
   if (Number(number) < 10) number = `00${number}`;
-  if (Number(number) > 10 && Number(number) < 100) number = `0${number}`;
-  return number;
+  else if (Number(number) >= 10 && Number(number) < 100) number = `0${number}`;
+  return String(number);
 }
 
 export const getAllParallelCall = async (ApiUrls) => {

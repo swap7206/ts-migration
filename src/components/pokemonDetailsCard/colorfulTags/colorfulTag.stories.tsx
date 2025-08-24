@@ -9,15 +9,9 @@ const meta: Meta<typeof ColorfulTag> = {
   },
   tags: ['autodocs'],
   argTypes: {
-    label: {
-      control: 'text',
-      description: 'Text to display in the tag',
-    },
-    color: {
-      control: 'color',
-      description: 'Background color of the tag',
-    },
-    onClick: { action: 'tag clicked' },
+    text: { control: 'text' },
+    type: { control: 'text' },
+    className: { control: 'text' },
   },
 };
 
@@ -26,98 +20,77 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    label: 'Default Tag',
-    color: '#007bff',
+    text: 'Normal',
+    type: 'normal',
   },
 };
 
-export const PokemonTypes: Story = {
+export const FireType: Story = {
   args: {
-    label: 'Fire',
-    color: '#EDC2C4',
+    text: 'Fire',
+    type: 'fire',
   },
 };
 
 export const WaterType: Story = {
   args: {
-    label: 'Water',
-    color: '#CBD5ED',
+    text: 'Water',
+    type: 'water',
   },
 };
 
 export const GrassType: Story = {
   args: {
-    label: 'Grass',
-    color: '#C0D4C8',
+    text: 'Grass',
+    type: 'grass',
   },
 };
 
 export const ElectricType: Story = {
   args: {
-    label: 'Electric',
-    color: '#E2E2A0',
+    text: 'Electric',
+    type: 'electric',
   },
 };
 
 export const PsychicType: Story = {
   args: {
-    label: 'Psychic',
-    color: '#DDC0CF',
+    text: 'Psychic',
+    type: 'psychic',
   },
 };
 
 export const DarkType: Story = {
   args: {
-    label: 'Dark',
-    color: '#C6C5E3',
+    text: 'Dark',
+    type: 'dark',
   },
 };
 
 export const FairyType: Story = {
   args: {
-    label: 'Fairy',
-    color: '#E4C0CF',
+    text: 'Fairy',
+    type: 'fairy',
   },
 };
 
-export const WithClickHandler: Story = {
+export const WithCustomClass: Story = {
   args: {
-    label: 'Clickable Tag',
-    color: '#28a745',
-    onClick: () => console.log('Tag clicked!'),
-  },
-};
-
-export const LongLabel: Story = {
-  args: {
-    label: 'Very Long Tag Label That Might Wrap',
-    color: '#6f42c1',
-  },
-};
-
-export const ShortLabel: Story = {
-  args: {
-    label: 'Tag',
-    color: '#dc3545',
-  },
-};
-
-export const CustomColor: Story = {
-  args: {
-    label: 'Custom Color',
-    color: '#ff6b6b',
+    text: 'Custom Tag',
+    type: 'fire',
+    className: 'custom-tag-class',
   },
 };
 
 export const MultipleTags: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-      <ColorfulTag label="Fire" color="#EDC2C4" />
-      <ColorfulTag label="Water" color="#CBD5ED" />
-      <ColorfulTag label="Grass" color="#C0D4C8" />
-      <ColorfulTag label="Electric" color="#E2E2A0" />
-      <ColorfulTag label="Psychic" color="#DDC0CF" />
-      <ColorfulTag label="Dark" color="#C6C5E3" />
+      <ColorfulTag text="Fire" type="fire" />
+      <ColorfulTag text="Water" type="water" />
+      <ColorfulTag text="Grass" type="grass" />
+      <ColorfulTag text="Electric" type="electric" />
+      <ColorfulTag text="Psychic" type="psychic" />
+      <ColorfulTag text="Dark" type="dark" />
     </div>
   ),
 };

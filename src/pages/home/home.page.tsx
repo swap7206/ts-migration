@@ -8,18 +8,23 @@ import PokemonContext from "../../context/pokemonContext/pokmon.context";
 import DetailPage from "../details/details.page";
 import { Button, Col, Row } from "rsuite";
 import AppFilter from "../../components/filter/filter";
+import { Pokemon } from "../../types/pokemon.types";
 
 const HomePage: React.FC = () => {
   const [isCardSelected, setToggleSelect] = useState(false);
   const [pokemonId, setPokemonId] = useState<number | undefined>();
   const [isFilterEnable, setIsFilterEnable] = useState(false);
 
-  const { state, getPokemonData } = useContext(PokemonContext);
+  const context = useContext(PokemonContext);
+  if (!context) {
+    throw new Error('PokemonContext must be used within a PokemonProvider');
+  }
+  const { state, getPokemonData } = context;
   const { pokemonsList, isLoading, isLoadMoreInprogress } = state;
 
   const pokemonsListView = useMemo(
     () =>
-      pokemonsList?.map((data) => (
+      pokemonsList?.map((data: Pokemon) => (
         <div key={data.id} className="responsive">
           <PokemonCard 
             key={data.id} 

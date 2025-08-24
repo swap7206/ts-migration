@@ -87,7 +87,6 @@ const DetailsHeader: React.FC<DetailsHeaderProps> = ({
                   tooltipClass="tooltip-popover" 
                   name="read more" 
                   data={getPokemonDescriptions()} 
-                  appearance="subtle" 
                 />
               )}
             </div>

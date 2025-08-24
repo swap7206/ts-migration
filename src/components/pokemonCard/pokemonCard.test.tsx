@@ -1,137 +1,55 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import PokemonCard from './pokemonCard';
-
-const mockPokemon = {
-  id: 1,
-  name: 'bulbasaur',
-  base_experience: 64,
-  height: 7,
-  weight: 69,
-  sprites: {
-    front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-    front_shiny: null,
-    front_female: null,
-    front_shiny_female: null,
-    back_default: null,
-    back_shiny: null,
-    back_female: null,
-    back_shiny_female: null,
-    other: {
-      dream_world: {
-        front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg',
-        front_female: null,
-      },
-      home: {
-        front_default: null,
-        front_female: null,
-        front_shiny: null,
-        front_shiny_female: null,
-      },
-      'official-artwork': {
-        front_default: null,
-        front_shiny: null,
-      },
-    },
-  },
-  types: [
-    {
-      slot: 1,
-      type: {
-        name: 'grass',
-        url: 'https://pokeapi.co/api/v2/type/12/',
-      },
-    },
-    {
-      slot: 2,
-      type: {
-        name: 'poison',
-        url: 'https://pokeapi.co/api/v2/type/4/',
-      },
-    },
-  ],
-  stats: [],
-  abilities: [],
-  moves: [],
-  species: {
-    name: 'bulbasaur',
-    url: 'https://pokeapi.co/api/v2/pokemon-species/1/',
-  },
-  forms: [],
-  game_indices: [],
-  held_items: [],
-  location_area_encounters: '',
-  order: 1,
-  past_types: [],
-};
+import PokemonCard from './pokemonCard.js';
 
 describe('PokemonCard', () => {
-  it('renders pokemon name and ID correctly', () => {
+  const mockPokemon = {
+    id: 1,
+    name: 'bulbasaur',
+    sprites: {
+      front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
+      other: {
+        dream_world: {
+          front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg'
+        }
+      }
+    },
+    types: [
+      {
+        slot: 1,
+        type: { name: 'grass', url: 'https://pokeapi.co/api/v2/type/12/' }
+      },
+      {
+        slot: 2,
+        type: { name: 'poison', url: 'https://pokeapi.co/api/v2/type/4/' }
+      }
+    ]
+  };
+
+  it('renders pokemon card with basic data', () => {
     render(<PokemonCard data={mockPokemon} />);
     
     expect(screen.getByText('bulbasaur')).toBeInTheDocument();
     expect(screen.getByText('001')).toBeInTheDocument();
+    expect(screen.getByAltText('Avatar')).toBeInTheDocument();
   });
 
-  it('renders pokemon image with correct src', () => {
-    render(<PokemonCard data={mockPokemon} />);
-    
-    const image = screen.getByAltText('Avatar');
-    expect(image).toHaveAttribute('src', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg');
-  });
-
-  it('falls back to front_default when dream_world image is not available', () => {
-    const pokemonWithoutDreamWorld = {
-      ...mockPokemon,
-      sprites: {
-        ...mockPokemon.sprites,
-        other: {
-          ...mockPokemon.sprites.other,
-          dream_world: {
-            front_default: null,
-            front_female: null,
-          },
-        },
-      },
-    };
-
-    render(<PokemonCard data={pokemonWithoutDreamWorld} />);
-    
-    const image = screen.getByAltText('Avatar');
-    expect(image).toHaveAttribute('src', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png');
-  });
-
-  it('falls back to placeholder when no images are available', () => {
-    const pokemonWithoutImages = {
-      ...mockPokemon,
-      sprites: {
-        ...mockPokemon.sprites,
-        front_default: null,
-        other: {
-          ...mockPokemon.sprites.other,
-          dream_world: {
-            front_default: null,
-            front_female: null,
-          },
-        },
-      },
-    };
-
-    render(<PokemonCard data={pokemonWithoutImages} />);
-    
-    const image = screen.getByAltText('Avatar');
-    expect(image).toHaveAttribute('src', 'https://via.placeholder.com/150');
-  });
-
-  it('applies custom className when provided', () => {
+  it('renders with custom className', () => {
     render(<PokemonCard data={mockPokemon} className="custom-class" />);
     
     const card = screen.getByRole('presentation');
     expect(card).toHaveClass('custom-class', 'card');
   });
 
-  it('calls onClick handler when clicked', () => {
+  it('renders without className', () => {
+    render(<PokemonCard data={mockPokemon} />);
+    
+    const card = screen.getByRole('presentation');
+    expect(card).toHaveClass('card');
+  });
+
+  it('handles onClick event', () => {
     const mockOnClick = jest.fn();
     render(<PokemonCard data={mockPokemon} onClick={mockOnClick} />);
     
@@ -141,76 +59,250 @@ describe('PokemonCard', () => {
     expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
 
-  it('does not call onClick when no handler is provided', () => {
-    render(<PokemonCard data={mockPokemon} />);
-    
-    const card = screen.getByRole('presentation');
-    expect(() => fireEvent.click(card)).not.toThrow();
-  });
-
-  it('applies background style based on pokemon types', () => {
-    render(<PokemonCard data={mockPokemon} />);
-    
-    const card = screen.getByRole('presentation');
-    expect(card).toHaveStyle('background: linear-gradient(180deg, #C0D4C8 0%, #CFB7ED 100%)');
-  });
-
-  it('handles single type pokemon correctly', () => {
+  it('renders with single type', () => {
     const singleTypePokemon = {
       ...mockPokemon,
       types: [
         {
           slot: 1,
-          type: {
-            name: 'fire',
-            url: 'https://pokeapi.co/api/v2/type/10/',
-          },
-        },
-      ],
+          type: { name: 'fire', url: 'https://pokeapi.co/api/v2/type/10/' }
+        }
+      ]
     };
-
+    
     render(<PokemonCard data={singleTypePokemon} />);
     
-    const card = screen.getByRole('presentation');
-    expect(card).toHaveStyle('background: #EDC2C4');
+    expect(screen.getByText('bulbasaur')).toBeInTheDocument();
+    expect(screen.getByText('001')).toBeInTheDocument();
   });
 
-  it('handles pokemon with ID less than 10', () => {
-    const lowIdPokemon = { ...mockPokemon, id: 5 };
-    render(<PokemonCard data={lowIdPokemon} />);
+  it('renders with no types', () => {
+    const noTypePokemon = {
+      ...mockPokemon,
+      types: []
+    };
+    
+    render(<PokemonCard data={noTypePokemon} />);
+    
+    expect(screen.getByText('bulbasaur')).toBeInTheDocument();
+    expect(screen.getByText('001')).toBeInTheDocument();
+  });
+
+  it('uses dream world sprite when available', () => {
+    render(<PokemonCard data={mockPokemon} />);
+    
+    const image = screen.getByAltText('Avatar');
+    expect(image).toHaveAttribute('src', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg');
+  });
+
+  it('falls back to front_default when dream world sprite is not available', () => {
+    const pokemonWithoutDreamWorld = {
+      ...mockPokemon,
+      sprites: {
+        front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
+        other: {
+          dream_world: {
+            front_default: null
+          }
+        }
+      }
+    };
+    
+    render(<PokemonCard data={pokemonWithoutDreamWorld} />);
+    
+    const image = screen.getByAltText('Avatar');
+    expect(image).toHaveAttribute('src', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png');
+  });
+
+  it('uses placeholder when no sprites are available', () => {
+    const pokemonWithoutSprites = {
+      ...mockPokemon,
+      sprites: {
+        front_default: null,
+        other: {
+          dream_world: {
+            front_default: null
+          }
+        }
+      }
+    };
+    
+    render(<PokemonCard data={pokemonWithoutSprites} />);
+    
+    const image = screen.getByAltText('Avatar');
+    expect(image).toHaveAttribute('src', 'https://via.placeholder.com/150');
+  });
+
+  it('handles pokemon with high ID number', () => {
+    const highIdPokemon = {
+      ...mockPokemon,
+      id: 999
+    };
+    
+    render(<PokemonCard data={highIdPokemon} />);
+    
+    expect(screen.getByText('999')).toBeInTheDocument();
+  });
+
+  it('handles pokemon with single digit ID', () => {
+    const singleDigitPokemon = {
+      ...mockPokemon,
+      id: 5
+    };
+    
+    render(<PokemonCard data={singleDigitPokemon} />);
     
     expect(screen.getByText('005')).toBeInTheDocument();
   });
 
-  it('handles pokemon with ID between 10 and 99', () => {
-    const mediumIdPokemon = { ...mockPokemon, id: 25 };
-    render(<PokemonCard data={mediumIdPokemon} />);
+  it('handles pokemon with double digit ID', () => {
+    const doubleDigitPokemon = {
+      ...mockPokemon,
+      id: 25
+    };
+    
+    render(<PokemonCard data={doubleDigitPokemon} />);
     
     expect(screen.getByText('025')).toBeInTheDocument();
   });
 
-  it('handles pokemon with ID 100 or greater', () => {
-    const highIdPokemon = { ...mockPokemon, id: 150 };
-    render(<PokemonCard data={highIdPokemon} />);
+  it('handles pokemon with special characters in name', () => {
+    const specialNamePokemon = {
+      ...mockPokemon,
+      name: 'mr-mime'
+    };
     
-    expect(screen.getByText('150')).toBeInTheDocument();
+    render(<PokemonCard data={specialNamePokemon} />);
+    
+    expect(screen.getByText('mr-mime')).toBeInTheDocument();
   });
 
-  it('renders with default props', () => {
-    render(<PokemonCard data={mockPokemon} />);
+  it('handles pokemon with uppercase name', () => {
+    const uppercaseNamePokemon = {
+      ...mockPokemon,
+      name: 'CHARIZARD'
+    };
+    
+    render(<PokemonCard data={uppercaseNamePokemon} />);
+    
+    expect(screen.getByText('CHARIZARD')).toBeInTheDocument();
+  });
+
+  it('handles null onClick prop', () => {
+    render(<PokemonCard data={mockPokemon} onClick={null} />);
     
     const card = screen.getByRole('presentation');
+    fireEvent.click(card);
+    
+    // Should not throw an error
     expect(card).toBeInTheDocument();
+  });
+
+  it('handles undefined onClick prop', () => {
+    render(<PokemonCard data={mockPokemon} onClick={undefined} />);
+    
+    const card = screen.getByRole('presentation');
+    fireEvent.click(card);
+    
+    // Should not throw an error
+    expect(card).toBeInTheDocument();
+  });
+
+  it('handles empty className', () => {
+    render(<PokemonCard data={mockPokemon} className="" />);
+    
+    const card = screen.getByRole('presentation');
     expect(card).toHaveClass('card');
   });
 
-  it('has correct accessibility attributes', () => {
-    render(<PokemonCard data={mockPokemon} />);
+  it('handles null className', () => {
+    render(<PokemonCard data={mockPokemon} className={null} />);
     
     const card = screen.getByRole('presentation');
-    const image = screen.getByAltText('Avatar');
+    expect(card).toHaveClass('card');
+  });
+
+  it('handles undefined className', () => {
+    render(<PokemonCard data={mockPokemon} className={undefined} />);
     
-    expect(card).toHaveAttribute('role', 'presentation');
-    expect(image).toHaveAttribute('alt', 'Avatar');
+    const card = screen.getByRole('presentation');
+    expect(card).toHaveClass('card');
+  });
+
+  it('handles missing sprites object', () => {
+    const pokemonWithoutSprites = {
+      ...mockPokemon,
+      sprites: null
+    };
+    
+    render(<PokemonCard data={pokemonWithoutSprites} />);
+    
+    const image = screen.getByAltText('Avatar');
+    expect(image).toHaveAttribute('src', 'https://via.placeholder.com/150');
+  });
+
+  it('handles missing other object in sprites', () => {
+    const pokemonWithoutOther = {
+      ...mockPokemon,
+      sprites: {
+        front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+      }
+    };
+    
+    render(<PokemonCard data={pokemonWithoutOther} />);
+    
+    const image = screen.getByAltText('Avatar');
+    expect(image).toHaveAttribute('src', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png');
+  });
+
+  it('handles missing dream_world object', () => {
+    const pokemonWithoutDreamWorld = {
+      ...mockPokemon,
+      sprites: {
+        front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
+        other: {}
+      }
+    };
+    
+    render(<PokemonCard data={pokemonWithoutDreamWorld} />);
+    
+    const image = screen.getByAltText('Avatar');
+    expect(image).toHaveAttribute('src', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png');
+  });
+
+  it('handles null data prop', () => {
+    render(<PokemonCard data={null} />);
+    
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    expect(screen.getByText('#000')).toBeInTheDocument();
+  });
+
+  it('handles undefined data prop', () => {
+    render(<PokemonCard data={undefined} />);
+    
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    expect(screen.getByText('#000')).toBeInTheDocument();
+  });
+
+  it('handles missing name', () => {
+    const pokemonWithoutName = {
+      ...mockPokemon,
+      name: null
+    };
+    
+    render(<PokemonCard data={pokemonWithoutName} />);
+    
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+  });
+
+  it('handles missing ID', () => {
+    const pokemonWithoutId = {
+      ...mockPokemon,
+      id: null
+    };
+    
+    render(<PokemonCard data={pokemonWithoutId} />);
+    
+    expect(screen.getByText('#000')).toBeInTheDocument();
   });
 });

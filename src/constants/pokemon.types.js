@@ -87,6 +87,10 @@ export const getPokcolor = (type) => {
 
 export const getBackground = (pokemonTypes) => {
     var color = "";
+    if (!pokemonTypes || pokemonTypes.length === 0) {
+        return POKEMON_TYPE['unknown'].color;
+    }
+    
     if (pokemonTypes.length) {
         var { type: { name: pokemontype1 } } = pokemonTypes[0];
     }
@@ -102,7 +106,7 @@ export const getBackground = (pokemonTypes) => {
 
 
 export const getPokemonDescription = (data = []) => {
-    if (data.length) {
+    if (data && data.length) {
         let uniqueTextArray = [];
         return data.reduce((acc, next) => {
             if (next.language.name === "en" && !uniqueTextArray.includes(next.flavor_text)) {

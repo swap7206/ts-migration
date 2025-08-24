@@ -9,9 +9,15 @@ const ColorfulTag = ({ text, className, type }) => {
     return (
         <div>
             <div className={className}>
-                <span style={{
-                    background: getPokcolor(type)
-                }} className="colorful-tag">{text}</span>
+                <span 
+                    data-testid="colorful-tag"
+                    style={{
+                        background: getPokcolor(type)
+                    }} 
+                    className="colorful-tag"
+                >
+                    {text}
+                </span>
             </div>
         </div>
     )

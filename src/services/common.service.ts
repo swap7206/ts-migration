@@ -63,5 +63,9 @@ export const getAllParallelCall = async (ApiUrls: string[]): Promise<any[]> => {
 };
 
 export const removeDuplicateBy = <T>(arr: T[], prop: keyof T): T[] => {
-  return [...new Map(arr.map((m) => [m[prop], m])).values()];
+  const map = new Map();
+  arr.forEach((m) => {
+    map.set(m[prop], m);
+  });
+  return Array.from(map.values());
 };

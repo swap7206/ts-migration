@@ -4,14 +4,14 @@ import '@testing-library/jest-dom';
 
 // Mock RSuite components
 jest.mock('rsuite', () => ({
-  MultiCascader: ({ data, placeholder, onChange, ...props }: any) => (
-    <div data-testid="multi-cascader" {...props}>
+  CheckPicker: ({ data, placeholder, onChange, ...props }: any) => (
+    <div data-testid="check-picker" {...props}>
       <input 
-        data-testid="multi-cascader-input"
+        data-testid="check-picker-input"
         placeholder={placeholder}
         onChange={(e) => onChange && onChange(e.target.value)}
       />
-      <div data-testid="multi-cascader-data">
+      <div data-testid="check-picker-data">
         {data?.map((item: any, index: number) => (
           <div key={index} data-testid={`option-${item.value}`}>
             {item.label}
@@ -34,14 +34,14 @@ describe('AppMultiSelectDropDown', () => {
   it('renders with default props', () => {
     render(<AppMultiSelectDropDown data={mockData} />);
     
-    const multiCascader = screen.getByTestId('multi-cascader');
-    expect(multiCascader).toBeInTheDocument();
+    const checkPicker = screen.getByTestId('check-picker');
+    expect(checkPicker).toBeInTheDocument();
   });
 
   it('renders with custom placeholder', () => {
     render(<AppMultiSelectDropDown data={mockData} placeholder="Select options" />);
     
-    const input = screen.getByTestId('multi-cascader-input');
+    const input = screen.getByTestId('check-picker-input');
     expect(input).toHaveAttribute('placeholder', 'Select options');
   });
 
@@ -54,15 +54,15 @@ describe('AppMultiSelectDropDown', () => {
   it('renders with custom className', () => {
     render(<AppMultiSelectDropDown data={mockData} className="custom-class" />);
     
-    const multiCascader = screen.getByTestId('multi-cascader');
-    expect(multiCascader).toHaveClass('custom-class');
+    const checkPicker = screen.getByTestId('check-picker');
+    expect(checkPicker).toHaveClass('custom-class');
   });
 
   it('calls onChange when selection changes', () => {
     const mockOnChange = jest.fn();
     render(<AppMultiSelectDropDown data={mockData} onChange={mockOnChange} />);
     
-    const input = screen.getByTestId('multi-cascader-input');
+    const input = screen.getByTestId('check-picker-input');
     fireEvent.change(input, { target: { value: 'test' } });
     
     expect(mockOnChange).toHaveBeenCalledWith('test');
@@ -71,8 +71,8 @@ describe('AppMultiSelectDropDown', () => {
   it('renders with isOpen prop', () => {
     render(<AppMultiSelectDropDown data={mockData} isOpen={true} />);
     
-    const multiCascader = screen.getByTestId('multi-cascader');
-    expect(multiCascader).toBeInTheDocument();
+    const checkPicker = screen.getByTestId('check-picker');
+    expect(checkPicker).toBeInTheDocument();
   });
 
   it('renders data options', () => {
@@ -86,7 +86,7 @@ describe('AppMultiSelectDropDown', () => {
   it('renders with empty data', () => {
     render(<AppMultiSelectDropDown data={[]} />);
     
-    const multiCascader = screen.getByTestId('multi-cascader');
-    expect(multiCascader).toBeInTheDocument();
+    const checkPicker = screen.getByTestId('check-picker');
+    expect(checkPicker).toBeInTheDocument();
   });
 });
