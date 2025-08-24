@@ -1,43 +1,46 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { PokemonProvider } from '../../context/pokemonContext/pokemon.provider';
 
 // Mock RSuite components
-jest.mock('rsuite', () => ({
-  Row: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'row', ...props }, children),
-  Col: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'col', ...props }, children),
-  Input: ({ placeholder, className, onChange, ...props }: any) => 
-    React.createElement('input', { 
-      'data-testid': 'search-input',
-      placeholder,
-      className,
-      onChange,
-      ...props
-    }),
-  InputGroup: ({ children, ...props }: any) => 
-    React.createElement('div', { 'data-testid': 'input-group', ...props }, children),
-  'InputGroup.Button': ({ children }: any) => 
-    React.createElement('button', { 'data-testid': 'search-button' }, children),
-  CheckPicker: ({ data, placeholder, onChange, ...props }: any) => 
-    React.createElement('div', { 'data-testid': 'check-picker', ...props }, [
-      React.createElement('input', { 
-        key: 'input',
-        'data-testid': 'check-picker-input',
+jest.mock('rsuite', () => {
+  const mockReact = require('react');
+  return {
+    Row: ({ children, ...props }: any) => mockReact.createElement('div', { 'data-testid': 'row', ...props }, children),
+    Col: ({ children, ...props }: any) => mockReact.createElement('div', { 'data-testid': 'col', ...props }, children),
+    Input: ({ placeholder, className, onChange, ...props }: any) => 
+      mockReact.createElement('input', { 
+        'data-testid': 'search-input',
         placeholder,
-        onChange: (e: any) => onChange && onChange(e.target.value)
+        className,
+        onChange,
+        ...props
       }),
-      React.createElement('div', { key: 'data', 'data-testid': 'check-picker-data' }, 
-        data?.map((item: any, index: number) => 
-          React.createElement('div', { key: index, 'data-testid': `option-${item.value}` }, item.label)
+    InputGroup: ({ children, ...props }: any) => 
+      mockReact.createElement('div', { 'data-testid': 'input-group', ...props }, children),
+    CheckPicker: ({ data, placeholder, onChange, ...props }: any) => 
+      mockReact.createElement('div', { 'data-testid': 'check-picker', ...props }, [
+        mockReact.createElement('input', { 
+          key: 'input',
+          'data-testid': 'check-picker-input',
+          placeholder,
+          onChange: (e: any) => onChange && onChange(e.target.value)
+        }),
+        mockReact.createElement('div', { key: 'data', 'data-testid': 'check-picker-data' }, 
+          data?.map((item: any, index: number) => 
+            mockReact.createElement('div', { key: index, 'data-testid': `option-${item.value}` }, item.label)
+          )
         )
-      )
-    ])
-}));
+      ])
+  };
+});
 
 // Mock the search icon
 jest.mock('@rsuite/icons/Search', () => {
   return function SearchIcon() {
-    return <span data-testid="search-icon">🔍</span>;
+    const mockReact = require('react');
+    return mockReact.createElement('span', { 'data-testid': 'search-icon' }, '🔍');
   };
 });
 
@@ -55,31 +58,22 @@ jest.mock('rxjs', () => ({
   }))
 }));
 
-// Mock PokemonContext
-const mockContextValue = {
-  state: {
-    allPokemonsList: [
-      { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/' },
-      { name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon/2/' }
-    ],
-    pokemonsTypes: ['fire', 'water', 'grass'],
-    pokemonGenderList: ['male', 'female']
-  },
-  dispatch: jest.fn(),
-  getPokemonData: jest.fn(),
-  setAppLoading: jest.fn(),
-  getPokemonDetailsListByUrl: jest.fn()
-};
-
-jest.mock('../../context/pokemonContext/pokmon.context', () => ({
-  __esModule: true,
-  default: {
-    Provider: ({ children }: any) => children,
-    Consumer: ({ children }: any) => children(mockContextValue)
-  }
+// Mock the API service calls
+jest.mock('../../services/common.service', () => ({
+  getAllParallelCall: jest.fn(() => Promise.resolve([])),
+  getPokemonGenders: jest.fn(() => Promise.resolve([])),
+  getPokemonTypes: jest.fn(() => Promise.resolve([])),
+  removeDuplicateBy: jest.fn((arr: any[]) => arr)
 }));
 
 import AppFilter from './filter';
+
+// Wrapper component that provides context
+const TestWrapper = ({ children }: any) => (
+  <PokemonProvider>
+    {children}
+  </PokemonProvider>
+);
 
 describe('AppFilter', () => {
   const mockOnSearchChange = jest.fn();

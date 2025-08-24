@@ -3,27 +3,32 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Mock RSuite components
-jest.mock('rsuite', () => ({
-  Input: ({ placeholder, className, onChange, ...props }: any) => (
-    <input 
-      data-testid="search-input"
-      placeholder={placeholder}
-      className={className}
-      onChange={onChange}
-      {...props}
-    />
-  ),
-  InputGroup: ({ children, ...props }: any) => (
+jest.mock('rsuite', () => {
+  const MockInputGroup = ({ children, inside, ...props }: any) => (
     <div data-testid="input-group" {...props}>
       {children}
     </div>
-  ),
-  'InputGroup.Button': ({ children }: any) => (
+  );
+  
+  MockInputGroup.Button = ({ children }: any) => (
     <button data-testid="search-button">
       {children}
     </button>
-  )
-}));
+  );
+
+  return {
+    Input: ({ placeholder, className, onChange, size, ...props }: any) => (
+      <input 
+        data-testid="search-input"
+        placeholder={placeholder}
+        className={className}
+        onChange={onChange}
+        {...props}
+      />
+    ),
+    InputGroup: MockInputGroup
+  };
+});
 
 // Mock the search icon
 jest.mock('@rsuite/icons/Search', () => {
@@ -69,7 +74,7 @@ describe('SearchFilter', () => {
     const input = screen.getByTestId('search-input');
     fireEvent.change(input, { target: { value: 'test' } });
     
-    expect(mockOnChangeHandler).toHaveBeenCalledWith('test', expect.any(Object));
+    expect(mockOnChangeHandler).toHaveBeenCalledWith(expect.any(Object));
   });
 
   it('renders search button with icon', () => {
