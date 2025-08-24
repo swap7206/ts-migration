@@ -1,7 +1,6 @@
 import type { Preview } from "@storybook/react";
+import React from 'react';
 import '../src/index.css';
-import 'rsuite/styles/index.less';
-import 'rsuite/dist/rsuite.min.css';
 
 const preview: Preview = {
   parameters: {

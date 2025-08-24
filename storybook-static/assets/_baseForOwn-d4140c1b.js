@@ -1,0 +1,1 @@
+import{k as F}from"./_getPrototype-c13c412d.js";function f(e){return function(r,t,i){for(var v=-1,a=Object(r),n=i(r),s=n.length;s--;){var o=n[e?s:++v];if(t(a[o],o,a)===!1)break}return r}}var u=f,b=u,l=b(),_=l,c=_,p=F;function h(e,r){return e&&c(e,r,p)}var w=h;export{w as _};

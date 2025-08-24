@@ -21,11 +21,20 @@ const config: StorybookConfig = {
   },
   typescript: {
     check: false,
-    reactDocgen: 'react-docgen-typescript',
-    reactDocgenTypescriptOptions: {
-      shouldExtractLiteralValuesFromEnum: true,
-      propFilter: (prop) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
-    },
+    reactDocgen: false,
+  },
+  viteFinal: async (config) => {
+    // Add any custom Vite config here
+    if (config.resolve) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@': '/src',
+      };
+    }
+    return config;
+  },
+  core: {
+    disableTelemetry: true,
   },
 };
 
