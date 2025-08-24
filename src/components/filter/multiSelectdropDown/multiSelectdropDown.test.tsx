@@ -60,7 +60,7 @@ describe('AppMultiSelectDropDown', () => {
 
   it('calls onChange when selection changes', () => {
     const mockOnChange = jest.fn();
-    render(<AppMultiSelectDropDown data={mockData} onChange={mockOnChange} />);
+    render(<AppMultiSelectDropDown data={mockData} onChangeHandler={mockOnChange} />);
     
     const input = screen.getByTestId('check-picker-input');
     fireEvent.change(input, { target: { value: 'test' } });

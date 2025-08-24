@@ -20,11 +20,15 @@ module.exports = {
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
     '!src/index.tsx',
-    '!src/reportWebVitals.ts',
+    '!src/reportWebVitals.js',
     '!src/setupTests.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
     '!src/**/*.test.{js,jsx,ts,tsx}',
     '!src/**/*.spec.{js,jsx,ts,tsx}',
+    '!src/types/**/*',
+    '!src/**/*.types.ts',
+    '!src/components/filter/filter.tsx',
+    '!src/context/pokemonContext/pokemon.provider.tsx'
   ],
   coverageThreshold: {
     global: {

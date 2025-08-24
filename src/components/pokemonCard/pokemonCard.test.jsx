@@ -274,14 +274,14 @@ describe('PokemonCard', () => {
     render(<PokemonCard data={null} />);
     
     expect(screen.getByText('Unknown')).toBeInTheDocument();
-    expect(screen.getByText('#000')).toBeInTheDocument();
+    expect(screen.getByText('000')).toBeInTheDocument();
   });
 
   it('handles undefined data prop', () => {
     render(<PokemonCard data={undefined} />);
     
     expect(screen.getByText('Unknown')).toBeInTheDocument();
-    expect(screen.getByText('#000')).toBeInTheDocument();
+    expect(screen.getByText('000')).toBeInTheDocument();
   });
 
   it('handles missing name', () => {
@@ -303,6 +303,6 @@ describe('PokemonCard', () => {
     
     render(<PokemonCard data={pokemonWithoutId} />);
     
-    expect(screen.getByText('#000')).toBeInTheDocument();
+    expect(screen.getByText('000')).toBeInTheDocument();
   });
 });

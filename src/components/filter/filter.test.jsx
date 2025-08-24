@@ -68,39 +68,61 @@ jest.mock('rxjs', () => ({
       subscribe: jest.fn()
     }))
   })),
-  debounceTime: jest.fn(() => ({
-    pipe: jest.fn(() => ({
-      subscribe: jest.fn()
-    }))
-  })),
-  distinctUntilChanged: jest.fn(() => ({
-    pipe: jest.fn(() => ({
-      subscribe: jest.fn()
-    }))
-  }))
+  debounceTime: jest.fn(() => (x: any) => x),
+  distinctUntilChanged: jest.fn(() => (x: any) => x),
+  map: jest.fn(() => (x: any) => x)
 }));
 
 // Mock the API service calls
 jest.mock('../../services/common.service', () => ({
   getAllParallelCall: jest.fn(() => Promise.resolve([])),
-  getPokemonGenders: jest.fn(() => Promise.resolve([])),
-  getPokemonTypes: jest.fn(() => Promise.resolve([])),
-  removeDuplicateBy: jest.fn((arr: any[]) => arr),
-  getPokemonData: jest.fn(() => Promise.resolve([])),
+  getPokemonGenders: jest.fn(() => Promise.resolve({ results: [] })),
+  getPokemonTypes: jest.fn(() => Promise.resolve({ results: [] })),
+  removeDuplicateBy: jest.fn((arr: any[]) => arr || []),
+  getPokemonData: jest.fn(() => Promise.resolve({ results: [] })),
   getSpeciesDataById: jest.fn(() => Promise.resolve({})),
   getPokemonTypesById: jest.fn(() => Promise.resolve({})),
   getPokemonDataById: jest.fn(() => Promise.resolve({})),
-  getPokemonDataByURL: jest.fn(() => Promise.resolve({}))
+  getPokemonDataByURL: jest.fn(() => Promise.resolve({})),
+  initialURL: 'https://pokeapi.co/api/v2/pokemon?limit=20',
+  allPokemonURL: 'https://pokeapi.co/api/v2/pokemon?limit=1100'
 }));
 
 import AppFilter from './filter';
 
+// Mock the PokemonProvider
+jest.mock('../../context/pokemonContext/pokemon.provider', () => ({
+  PokemonProvider: ({ children }: any) => {
+    const mockReact = require('react');
+    const mockContext = {
+      state: {
+        allPokemonsList: [],
+        pokemonsTypes: [],
+        pokemonGenderList: [],
+        pokemonsList: [],
+        pokemonDetails: null,
+        apiCallsInProgress: false,
+        loadMoreDataInProgress: false
+      },
+      getPokemonData: jest.fn(() => Promise.resolve()),
+      dispatch: jest.fn(),
+      setAppLoading: jest.fn(),
+      getPokemonDetailsListByUrl: jest.fn(() => Promise.resolve([]))
+    };
+    
+    return mockReact.createElement(
+      require('../../context/pokemonContext/pokmon.context').default.Provider,
+      { value: mockContext },
+      children
+    );
+  }
+}));
+
 // Wrapper component that provides context
-const TestWrapper = ({ children }: any) => (
-  <PokemonProvider>
-    {children}
-  </PokemonProvider>
-);
+const TestWrapper = ({ children }: any) => {
+  const { PokemonProvider } = require('../../context/pokemonContext/pokemon.provider');
+  return require('react').createElement(PokemonProvider, {}, children);
+};
 
 describe('AppFilter', () => {
   const mockOnSearchChange = jest.fn();

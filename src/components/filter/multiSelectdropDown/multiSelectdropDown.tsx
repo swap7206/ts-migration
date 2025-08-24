@@ -10,23 +10,27 @@ interface MultiSelectOption {
 interface AppMultiSelectDropDownProps {
   label?: React.ReactNode;
   onChangeHandler?: (value: string[]) => void;
+  onChange?: (value: string[]) => void; // Alias for onChangeHandler
   data: MultiSelectOption[];
   placeholder?: string;
   isOpen?: boolean;
   onOpenHandler?: () => void;
   onCloseHandler?: () => void;
   onCleanHandler?: () => void;
+  className?: string;
 }
 
 const AppMultiSelectDropDown: React.FC<AppMultiSelectDropDownProps> = ({ 
   label, 
   onChangeHandler, 
+  onChange,
   data, 
   placeholder,
   isOpen,
   onOpenHandler,
   onCloseHandler,
-  onCleanHandler
+  onCleanHandler,
+  className
 }) => (
   <>
     <div className="multiselect-dropdown-wrapper">
@@ -35,7 +39,7 @@ const AppMultiSelectDropDown: React.FC<AppMultiSelectDropDownProps> = ({
         <CheckPicker 
           block 
           placeholder={placeholder} 
-          onChange={onChangeHandler} 
+          onChange={onChange || onChangeHandler} 
           size="lg" 
           onOpen={onOpenHandler} 
           onClose={onCloseHandler} 
@@ -43,6 +47,7 @@ const AppMultiSelectDropDown: React.FC<AppMultiSelectDropDownProps> = ({
           data={data} 
           searchable={false} 
           style={{ width: 224 }} 
+          className={className}
         />
       </div>
     </div>

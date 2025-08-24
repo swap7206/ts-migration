@@ -13,9 +13,10 @@ import "../../../styles/common.scss";
 interface DetailsHeaderProps {
   data: Pokemon;
   speciesData?: PokemonSpeciesResponse;
-  backClick: () => void;
-  closeClick: () => void;
-  forwordClick: () => void;
+  backClick?: () => void;
+  closeClick?: () => void;
+  forwordClick?: () => void;
+  className?: string;
 }
 
 const DetailsHeader: React.FC<DetailsHeaderProps> = ({ 
@@ -23,7 +24,8 @@ const DetailsHeader: React.FC<DetailsHeaderProps> = ({
   speciesData, 
   backClick,
   closeClick,
-  forwordClick
+  forwordClick,
+  className
 }) => {
   const getPokemonDescriptions = (): string => {
     if (speciesData && speciesData.flavor_text_entries) {
@@ -34,7 +36,7 @@ const DetailsHeader: React.FC<DetailsHeaderProps> = ({
 
   return (
     <>
-      <div className="details-header-container">
+      <div className={`details-header-container ${className || ''}`}>
         <div className="header-wrap">
           <div>
             <PokemonCard className="disabled-click" key={data.id} data={data} />
@@ -77,10 +79,10 @@ const DetailsHeader: React.FC<DetailsHeaderProps> = ({
             </div>
             <div className="text-description">
               <div className="text-dot">
-                <span>{getPokemonDescriptions().substring(0, 363)}</span>
+                <span>{getPokemonDescriptions() ? getPokemonDescriptions().substring(0, 363) : ''}</span>
               </div>
               <div className="text-dot">...</div>
-              {getPokemonDescriptions().length > 363 && (
+              {getPokemonDescriptions() && getPokemonDescriptions().length > 363 && (
                 <AppTooltip 
                   placement="bottom" 
                   className="load-more" 
