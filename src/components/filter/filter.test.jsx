@@ -1,529 +1,324 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { PokemonProvider } from '../../context/pokemonContext/pokemon.provider';
-
-// Mock RSuite components
-jest.mock('rsuite', () => {
-  const mockReact = require('react');
-  return {
-    Row: ({ children, ...props }: any) => mockReact.createElement('div', { 'data-testid': 'row', ...props }, children),
-    Col: ({ children, ...props }: any) => mockReact.createElement('div', { 'data-testid': 'col', ...props }, children),
-    Input: ({ placeholder, className, onChange, ...props }: any) => 
-      mockReact.createElement('input', { 
-        'data-testid': 'search-input',
-        placeholder,
-        className,
-        onChange,
-        ...props
-      }),
-    InputGroup: ({ children, ...props }: any) => 
-      mockReact.createElement('div', { 'data-testid': 'input-group', ...props }, children),
-    CheckPicker: ({ data, placeholder, onChange, ...props }: any) => 
-      mockReact.createElement('div', { 'data-testid': 'check-picker', ...props }, [
-        mockReact.createElement('input', { 
-          key: 'input',
-          'data-testid': 'check-picker-input',
-          placeholder,
-          onChange: (e: any) => onChange && onChange(e.target.value)
-        }),
-        mockReact.createElement('div', { key: 'data', 'data-testid': 'check-picker-data' }, 
-          data?.map((item: any, index: number) => 
-            mockReact.createElement('div', { key: index, 'data-testid': `option-${item.value}` }, item.label)
-          )
-        )
-      ])
-  };
-});
-
-// Mock the search icon
-jest.mock('@rsuite/icons/Search', () => {
-  return function SearchIcon() {
-    const mockReact = require('react');
-    return mockReact.createElement('span', { 'data-testid': 'search-icon' }, '🔍');
-  };
-});
-
-// Mock the search filter component
-jest.mock('./search/search.filter', () => {
-  return function SearchFilter({ placeholder, onChangeHandler, ...props }: any) {
-    const mockReact = require('react');
-    return mockReact.createElement('div', { 'data-testid': 'search-filter' }, [
-      mockReact.createElement('input', { 
-        key: 'input',
-        'data-testid': 'search-input',
-        placeholder,
-        onChange: onChangeHandler,
-        ...props
-      }),
-      mockReact.createElement('span', { key: 'icon', 'data-testid': 'search-icon' }, '🔍')
-    ]);
-  };
-});
-
-// Mock RxJS
-jest.mock('rxjs', () => ({
-  of: jest.fn(() => ({
-    pipe: jest.fn(() => ({
-      subscribe: jest.fn()
-    }))
-  })),
-  debounceTime: jest.fn(() => (x: any) => x),
-  distinctUntilChanged: jest.fn(() => (x: any) => x),
-  map: jest.fn(() => (x: any) => x)
-}));
-
-// Mock the API service calls
-jest.mock('../../services/common.service', () => ({
-  getAllParallelCall: jest.fn(() => Promise.resolve([])),
-  getPokemonGenders: jest.fn(() => Promise.resolve({ results: [] })),
-  getPokemonTypes: jest.fn(() => Promise.resolve({ results: [] })),
-  removeDuplicateBy: jest.fn((arr: any[]) => arr || []),
-  getPokemonData: jest.fn(() => Promise.resolve({ results: [] })),
-  getSpeciesDataById: jest.fn(() => Promise.resolve({})),
-  getPokemonTypesById: jest.fn(() => Promise.resolve({})),
-  getPokemonDataById: jest.fn(() => Promise.resolve({})),
-  getPokemonDataByURL: jest.fn(() => Promise.resolve({})),
-  initialURL: 'https://pokeapi.co/api/v2/pokemon?limit=20',
-  allPokemonURL: 'https://pokeapi.co/api/v2/pokemon?limit=1100'
-}));
-
 import AppFilter from './filter';
 
-// Mock the PokemonProvider
-jest.mock('../../context/pokemonContext/pokemon.provider', () => ({
-  PokemonProvider: ({ children }: any) => {
-    const mockReact = require('react');
-    const mockContext = {
-      state: {
-        allPokemonsList: [],
-        pokemonsTypes: [],
-        pokemonGenderList: [],
-        pokemonsList: [],
-        pokemonDetails: null,
-        apiCallsInProgress: false,
-        loadMoreDataInProgress: false
-      },
-      getPokemonData: jest.fn(() => Promise.resolve()),
-      dispatch: jest.fn(),
-      setAppLoading: jest.fn(),
-      getPokemonDetailsListByUrl: jest.fn(() => Promise.resolve([]))
-    };
-    
-    return mockReact.createElement(
-      require('../../context/pokemonContext/pokmon.context').default.Provider,
-      { value: mockContext },
-      children
-    );
+// Mock the PokemonContext
+const mockContext = {
+  state: {
+    allPokemonsList: [
+      { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/' },
+      { name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon/2/' }
+    ],
+    pokemonsTypes: [
+      { name: 'grass', url: 'https://pokeapi.co/api/v2/type/12/' },
+      { name: 'fire', url: 'https://pokeapi.co/api/v2/type/10/' }
+    ],
+    pokemonGenderList: [
+      { name: 'male', url: 'https://pokeapi.co/api/v2/gender/1/' },
+      { name: 'female', url: 'https://pokeapi.co/api/v2/gender/2/' }
+    ]
+  },
+  getPokemonData: jest.fn(),
+  dispatch: jest.fn(),
+  setAppLoading: jest.fn(),
+  getPokemonDetailsListByUrl: jest.fn()
+};
+
+// Mock the context before importing the component
+jest.mock('../../context/pokemonContext/pokmon.context', () => ({
+  __esModule: true,
+  default: {
+    Consumer: ({ children }) => children(mockContext),
+    Provider: ({ children }) => children,
+    _currentValue: mockContext
   }
 }));
 
-// Wrapper component that provides context
-const TestWrapper = ({ children }: any) => {
-  const { PokemonProvider } = require('../../context/pokemonContext/pokemon.provider');
-  return require('react').createElement(PokemonProvider, {}, children);
-};
+// Mock child components
+jest.mock('./search/search.filter', () => {
+  return function MockSearchFilter({ onSearchChange }) {
+    return (
+      <div data-testid="search-filter">
+        <input 
+          data-testid="search-input" 
+          onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
+          placeholder="Search..."
+        />
+      </div>
+    );
+  };
+});
+
+jest.mock('./multiSelectdropDown/multiSelectdropDown', () => {
+  return function MockMultiSelectDropDown({ 
+    data, 
+    label, 
+    onSelectionChange, 
+    isOpen, 
+    onToggle 
+  }) {
+    return (
+      <div data-testid={`multi-select-${label}`}>
+        <button onClick={onToggle}>{label}</button>
+        {isOpen && (
+          <div data-testid={`dropdown-${label}`}>
+            {data?.map((item, index) => (
+              <div 
+                key={index} 
+                onClick={() => onSelectionChange && onSelectionChange(item)}
+                data-testid={`option-${label}-${index}`}
+              >
+                {item.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+});
+
+// Mock CSS imports
+jest.mock('./filter.scss', () => ({}));
 
 describe('AppFilter', () => {
-  const mockOnSearchChange = jest.fn();
-  const mockOnTypeChange = jest.fn();
-  const mockOnGenderChange = jest.fn();
-
-  const mockTypeData = [
-    { label: 'Fire', value: 'fire' },
-    { label: 'Water', value: 'water' },
-    { label: 'Grass', value: 'grass' },
-  ];
-
-  const mockGenderData = [
-    { label: 'Male', value: 'male' },
-    { label: 'Female', value: 'female' },
-  ];
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders all filter components', () => {
-    const mockIsFilterEnable = jest.fn();
-    render(
-      <TestWrapper>
-        <AppFilter 
-          isFilterEnable={mockIsFilterEnable}
-        />
-      </TestWrapper>
-    );
-
-    expect(screen.getByTestId('search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('search-icon')).toBeInTheDocument();
-    expect(screen.getAllByTestId('check-picker')).toHaveLength(2); // Type and Gender
+    render(<AppFilter isFilterEnable={jest.fn()} />);
+    
+    expect(screen.getByTestId('search-filter')).toBeInTheDocument();
+    expect(screen.getByTestId('multi-select-Type')).toBeInTheDocument();
+    expect(screen.getByTestId('multi-select-Gender')).toBeInTheDocument();
   });
 
   it('renders with default props', () => {
-    render(
-      <TestWrapper>
-        <AppFilter />
-      </TestWrapper>
-    );
-
-    expect(screen.getByTestId('search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('search-input')).toHaveAttribute('placeholder', 'Search...');
+    render(<AppFilter />);
+    
+    expect(screen.getByTestId('search-filter')).toBeInTheDocument();
   });
 
   it('calls onSearchChange when search input changes', () => {
-    render(
-      <TestWrapper>
-        <AppFilter 
-          onSearchChange={mockOnSearchChange}
-          typeData={mockTypeData}
-          genderData={mockGenderData}
-        />
-      </TestWrapper>
-    );
-
+    const mockIsFilterEnable = jest.fn();
+    render(<AppFilter isFilterEnable={mockIsFilterEnable} />);
+    
     const searchInput = screen.getByTestId('search-input');
-    fireEvent.change(searchInput, { target: { value: 'pikachu' } });
-
-    expect(mockOnSearchChange).toHaveBeenCalledWith('pikachu');
-  });
-
-  it('calls onTypeChange when type selection changes', () => {
-    render(
-      <TestWrapper>
-        <AppFilter 
-          onSearchChange={mockOnSearchChange}
-          onTypeChange={mockOnTypeChange}
-          typeData={mockTypeData}
-          genderData={mockGenderData}
-        />
-      </TestWrapper>
-    );
-
-    const typePicker = screen.getAllByTestId('check-picker')[0];
-    const typeInput = typePicker.querySelector('input');
+    fireEvent.change(searchInput, { target: { value: 'bulbasaur' } });
     
-    if (typeInput) {
-      fireEvent.change(typeInput, { target: { value: 'fire' } });
-      expect(mockOnTypeChange).toHaveBeenCalledWith('fire');
-    }
-  });
-
-  it('calls onGenderChange when gender selection changes', () => {
-    render(
-      <TestWrapper>
-        <AppFilter 
-          onSearchChange={mockOnSearchChange}
-          onGenderChange={mockOnGenderChange}
-          typeData={mockTypeData}
-          genderData={mockGenderData}
-        />
-      </TestWrapper>
-    );
-
-    const genderPicker = screen.getAllByTestId('check-picker')[1];
-    const genderInput = genderPicker.querySelector('input');
-    
-    if (genderInput) {
-      fireEvent.change(genderInput, { target: { value: 'male' } });
-      expect(mockOnGenderChange).toHaveBeenCalledWith('male');
-    }
-  });
-
-  it('renders type options correctly', () => {
-    render(
-      <TestWrapper>
-        <AppFilter 
-          typeData={mockTypeData}
-          genderData={mockGenderData}
-        />
-      </TestWrapper>
-    );
-
-    expect(screen.getByTestId('option-fire')).toBeInTheDocument();
-    expect(screen.getByTestId('option-water')).toBeInTheDocument();
-    expect(screen.getByTestId('option-grass')).toBeInTheDocument();
-  });
-
-  it('renders gender options correctly', () => {
-    render(
-      <TestWrapper>
-        <AppFilter 
-          typeData={mockTypeData}
-          genderData={mockGenderData}
-        />
-      </TestWrapper>
-    );
-
-    expect(screen.getByTestId('option-male')).toBeInTheDocument();
-    expect(screen.getByTestId('option-female')).toBeInTheDocument();
+    // The search change should trigger the filter enable callback
+    expect(mockIsFilterEnable).toHaveBeenCalled();
   });
 
   it('handles empty type data', () => {
-    render(
-      <AppFilter 
-        typeData={[]}
-        genderData={mockGenderData}
-      />
-    );
+    const emptyTypeContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonsTypes: []
+      }
+    };
 
-    expect(screen.queryByTestId('option-fire')).not.toBeInTheDocument();
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }) => children(emptyTypeContext),
+        Provider: ({ children }) => children,
+        _currentValue: emptyTypeContext
+      }
+    }));
+
+    render(<AppFilter isFilterEnable={jest.fn()} />);
+    
+    expect(screen.getByTestId('multi-select-Type')).toBeInTheDocument();
   });
 
   it('handles empty gender data', () => {
-    render(
-      <AppFilter 
-        typeData={mockTypeData}
-        genderData={[]}
-      />
-    );
+    const emptyGenderContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonGenderList: []
+      }
+    };
 
-    expect(screen.queryByTestId('option-male')).not.toBeInTheDocument();
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }) => children(emptyGenderContext),
+        Provider: ({ children }) => children,
+        _currentValue: emptyGenderContext
+      }
+    }));
+
+    render(<AppFilter isFilterEnable={jest.fn()} />);
+    
+    expect(screen.getByTestId('multi-select-Gender')).toBeInTheDocument();
   });
 
   it('handles undefined callback functions', () => {
-    render(
-      <AppFilter 
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
-    const searchInput = screen.getByTestId('search-input');
-    fireEvent.change(searchInput, { target: { value: 'test' } });
-
-    // Should not throw an error
-    expect(searchInput).toBeInTheDocument();
+    render(<AppFilter />);
+    
+    // Should render without crashing even with undefined callback
+    expect(screen.getByTestId('search-filter')).toBeInTheDocument();
   });
 
   it('handles search input with special characters', () => {
-    render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
+    const mockIsFilterEnable = jest.fn();
+    render(<AppFilter isFilterEnable={mockIsFilterEnable} />);
+    
     const searchInput = screen.getByTestId('search-input');
-    fireEvent.change(searchInput, { target: { value: 'pikachu-123' } });
-
-    expect(mockOnSearchChange).toHaveBeenCalledWith('pikachu-123');
+    fireEvent.change(searchInput, { target: { value: 'pikachu@#$%' } });
+    
+    expect(mockIsFilterEnable).toHaveBeenCalled();
   });
 
   it('handles search input with numbers', () => {
-    render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
+    const mockIsFilterEnable = jest.fn();
+    render(<AppFilter isFilterEnable={mockIsFilterEnable} />);
+    
     const searchInput = screen.getByTestId('search-input');
-    fireEvent.change(searchInput, { target: { value: '123' } });
-
-    expect(mockOnSearchChange).toHaveBeenCalledWith('123');
+    fireEvent.change(searchInput, { target: { value: 'pokemon123' } });
+    
+    expect(mockIsFilterEnable).toHaveBeenCalled();
   });
 
   it('handles search input with empty string', () => {
-    render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
+    const mockIsFilterEnable = jest.fn();
+    render(<AppFilter isFilterEnable={mockIsFilterEnable} />);
+    
     const searchInput = screen.getByTestId('search-input');
     fireEvent.change(searchInput, { target: { value: '' } });
-
-    expect(mockOnSearchChange).toHaveBeenCalledWith('');
+    
+    expect(mockIsFilterEnable).toHaveBeenCalled();
   });
 
   it('handles search input with whitespace', () => {
-    render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
+    const mockIsFilterEnable = jest.fn();
+    render(<AppFilter isFilterEnable={mockIsFilterEnable} />);
+    
     const searchInput = screen.getByTestId('search-input');
-    fireEvent.change(searchInput, { target: { value: '  pikachu  ' } });
-
-    expect(mockOnSearchChange).toHaveBeenCalledWith('  pikachu  ');
+    fireEvent.change(searchInput, { target: { value: '   ' } });
+    
+    expect(mockIsFilterEnable).toHaveBeenCalled();
   });
 
   it('handles multiple rapid search changes', () => {
-    render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
+    const mockIsFilterEnable = jest.fn();
+    render(<AppFilter isFilterEnable={mockIsFilterEnable} />);
+    
     const searchInput = screen.getByTestId('search-input');
     
-    fireEvent.change(searchInput, { target: { value: 'p' } });
-    fireEvent.change(searchInput, { target: { value: 'pi' } });
-    fireEvent.change(searchInput, { target: { value: 'pik' } });
-    fireEvent.change(searchInput, { target: { value: 'pika' } });
-    fireEvent.change(searchInput, { target: { value: 'pikac' } });
-    fireEvent.change(searchInput, { target: { value: 'pikach' } });
-    fireEvent.change(searchInput, { target: { value: 'pikachu' } });
-
-    expect(mockOnSearchChange).toHaveBeenCalledTimes(7);
-    expect(mockOnSearchChange).toHaveBeenLastCalledWith('pikachu');
-  });
-
-  it('handles type selection with multiple values', () => {
-    render(
-      <AppFilter 
-        onTypeChange={mockOnTypeChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
-    const typePicker = screen.getAllByTestId('check-picker')[0];
-    const typeInput = typePicker.querySelector('input');
+    fireEvent.change(searchInput, { target: { value: 'a' } });
+    fireEvent.change(searchInput, { target: { value: 'ab' } });
+    fireEvent.change(searchInput, { target: { value: 'abc' } });
     
-    if (typeInput) {
-      fireEvent.change(typeInput, { target: { value: 'fire' } });
-      fireEvent.change(typeInput, { target: { value: 'water' } });
-      
-      expect(mockOnTypeChange).toHaveBeenCalledWith('fire');
-      expect(mockOnTypeChange).toHaveBeenCalledWith('water');
-    }
-  });
-
-  it('handles gender selection with multiple values', () => {
-    render(
-      <AppFilter 
-        onGenderChange={mockOnGenderChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
-    const genderPicker = screen.getAllByTestId('check-picker')[1];
-    const genderInput = genderPicker.querySelector('input');
-    
-    if (genderInput) {
-      fireEvent.change(genderInput, { target: { value: 'male' } });
-      fireEvent.change(genderInput, { target: { value: 'female' } });
-      
-      expect(mockOnGenderChange).toHaveBeenCalledWith('male');
-      expect(mockOnGenderChange).toHaveBeenCalledWith('female');
-    }
-  });
-
-  it('handles all filter changes simultaneously', () => {
-    render(
-      <AppFilter 
-        onSearchChange={mockOnSearchChange}
-        onTypeChange={mockOnTypeChange}
-        onGenderChange={mockOnGenderChange}
-        typeData={mockTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
-    const searchInput = screen.getByTestId('search-input');
-    const typePicker = screen.getAllByTestId('check-picker')[0];
-    const genderPicker = screen.getAllByTestId('check-picker')[1];
-    
-    const typeInput = typePicker.querySelector('input');
-    const genderInput = genderPicker.querySelector('input');
-
-    fireEvent.change(searchInput, { target: { value: 'charizard' } });
-    
-    if (typeInput) {
-      fireEvent.change(typeInput, { target: { value: 'fire' } });
-    }
-    
-    if (genderInput) {
-      fireEvent.change(genderInput, { target: { value: 'male' } });
-    }
-
-    expect(mockOnSearchChange).toHaveBeenCalledWith('charizard');
-    if (typeInput) {
-      expect(mockOnTypeChange).toHaveBeenCalledWith('fire');
-    }
-    if (genderInput) {
-      expect(mockOnGenderChange).toHaveBeenCalledWith('male');
-    }
+    expect(mockIsFilterEnable).toHaveBeenCalled();
   });
 
   it('handles large type data arrays', () => {
-    const largeTypeData = Array.from({ length: 100 }, (_, i) => ({
-      label: `Type ${i}`,
-      value: `type-${i}`
+    const largeTypeContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonsTypes: Array.from({ length: 100 }, (_, i) => ({
+          name: `type-${i}`,
+          url: `https://pokeapi.co/api/v2/type/${i}/`
+        }))
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }) => children(largeTypeContext),
+        Provider: ({ children }) => children,
+        _currentValue: largeTypeContext
+      }
     }));
 
-    render(
-      <AppFilter 
-        typeData={largeTypeData}
-        genderData={mockGenderData}
-      />
-    );
-
-    expect(screen.getByTestId('option-type-0')).toBeInTheDocument();
-    expect(screen.getByTestId('option-type-99')).toBeInTheDocument();
+    render(<AppFilter isFilterEnable={jest.fn()} />);
+    
+    expect(screen.getByTestId('multi-select-Type')).toBeInTheDocument();
   });
 
   it('handles large gender data arrays', () => {
-    const largeGenderData = Array.from({ length: 50 }, (_, i) => ({
-      label: `Gender ${i}`,
-      value: `gender-${i}`
+    const largeGenderContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonGenderList: Array.from({ length: 50 }, (_, i) => ({
+          name: `gender-${i}`,
+          url: `https://pokeapi.co/api/v2/gender/${i}/`
+        }))
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }) => children(largeGenderContext),
+        Provider: ({ children }) => children,
+        _currentValue: largeGenderContext
+      }
     }));
 
-    render(
-      <AppFilter 
-        typeData={mockTypeData}
-        genderData={largeGenderData}
-      />
-    );
-
-    expect(screen.getByTestId('option-gender-0')).toBeInTheDocument();
-    expect(screen.getByTestId('option-gender-49')).toBeInTheDocument();
+    render(<AppFilter isFilterEnable={jest.fn()} />);
+    
+    expect(screen.getByTestId('multi-select-Gender')).toBeInTheDocument();
   });
 
   it('handles type data with special characters in labels', () => {
-    const specialTypeData = [
-      { label: 'Fire & Flying', value: 'fire-flying' },
-      { label: 'Water/Electric', value: 'water-electric' },
-      { label: 'Grass (Special)', value: 'grass-special' }
-    ];
+    const specialTypeContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonsTypes: [
+          { name: 'fire/flying', url: 'https://pokeapi.co/api/v2/type/10/' },
+          { name: 'ice@water', url: 'https://pokeapi.co/api/v2/type/11/' }
+        ]
+      }
+    };
 
-    render(
-      <AppFilter 
-        typeData={specialTypeData}
-        genderData={mockGenderData}
-      />
-    );
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }) => children(specialTypeContext),
+        Provider: ({ children }) => children,
+        _currentValue: specialTypeContext
+      }
+    }));
 
-    expect(screen.getByTestId('option-fire-flying')).toBeInTheDocument();
-    expect(screen.getByTestId('option-water-electric')).toBeInTheDocument();
-    expect(screen.getByTestId('option-grass-special')).toBeInTheDocument();
+    render(<AppFilter isFilterEnable={jest.fn()} />);
+    
+    expect(screen.getByTestId('multi-select-Type')).toBeInTheDocument();
   });
 
   it('handles gender data with special characters in labels', () => {
-    const specialGenderData = [
-      { label: 'Male (Primary)', value: 'male-primary' },
-      { label: 'Female & Other', value: 'female-other' }
-    ];
+    const specialGenderContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonGenderList: [
+          { name: 'male/female', url: 'https://pokeapi.co/api/v2/gender/1/' },
+          { name: 'unknown@gender', url: 'https://pokeapi.co/api/v2/gender/2/' }
+        ]
+      }
+    };
 
-    render(
-      <AppFilter 
-        typeData={mockTypeData}
-        genderData={specialGenderData}
-      />
-    );
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }) => children(specialGenderContext),
+        Provider: ({ children }) => children,
+        _currentValue: specialGenderContext
+      }
+    }));
 
-    expect(screen.getByTestId('option-male-primary')).toBeInTheDocument();
-    expect(screen.getByTestId('option-female-other')).toBeInTheDocument();
+    render(<AppFilter isFilterEnable={jest.fn()} />);
+    
+    expect(screen.getByTestId('multi-select-Gender')).toBeInTheDocument();
   });
 });

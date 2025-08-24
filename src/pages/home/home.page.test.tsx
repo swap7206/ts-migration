@@ -1,81 +1,95 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Mock the PokemonProvider with context value
-const mockContextValue = {
+// Define mock context before using it in jest.mock
+const mockContext = {
   state: {
     pokemonsList: [
       {
         id: 1,
         name: 'bulbasaur',
+        base_experience: 64,
+        height: 7,
+        weight: 69,
         sprites: {
-          front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
+          front_default: 'https://example.com/bulbasaur.png',
+          front_shiny: null,
+          front_female: null,
+          front_shiny_female: null,
+          back_default: null,
+          back_shiny: null,
+          back_female: null,
+          back_shiny_female: null,
           other: {
-            dream_world: {
-              front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg'
-            }
+            dream_world: { front_default: null, front_female: null },
+            home: { front_default: null, front_female: null, front_shiny: null, front_shiny_female: null },
+            'official-artwork': { front_default: null, front_shiny: null }
           }
         },
-        types: [
-          {
-            slot: 1,
-            type: { name: 'grass', url: 'https://pokeapi.co/api/v2/type/12/' }
-          }
-        ]
+        types: [],
+        stats: [],
+        abilities: [],
+        moves: [],
+        species: { name: 'bulbasaur', url: 'https://example.com/species/1' },
+        forms: [],
+        game_indices: [],
+        held_items: [],
+        location_area_encounters: '',
+        order: 1,
+        past_types: []
       },
       {
         id: 2,
         name: 'ivysaur',
+        base_experience: 142,
+        height: 10,
+        weight: 130,
         sprites: {
-          front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png',
+          front_default: 'https://example.com/ivysaur.png',
+          front_shiny: null,
+          front_female: null,
+          front_shiny_female: null,
+          back_default: null,
+          back_shiny: null,
+          back_female: null,
+          back_shiny_female: null,
           other: {
-            dream_world: {
-              front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/2.svg'
-            }
+            dream_world: { front_default: null, front_female: null },
+            home: { front_default: null, front_female: null, front_shiny: null, front_shiny_female: null },
+            'official-artwork': { front_default: null, front_shiny: null }
           }
         },
-        types: [
-          {
-            slot: 1,
-            type: { name: 'grass', url: 'https://pokeapi.co/api/v2/type/12/' }
-          }
-        ]
+        types: [],
+        stats: [],
+        abilities: [],
+        moves: [],
+        species: { name: 'ivysaur', url: 'https://example.com/species/2' },
+        forms: [],
+        game_indices: [],
+        held_items: [],
+        location_area_encounters: '',
+        order: 2,
+        past_types: []
       }
     ],
     isLoading: false,
-    isLoadMoreInprogress: false,
-    allPokemonsList: [],
-    pokemonsTypes: [],
-    pokemonGenderList: []
+    isLoadMoreInprogress: false
   },
-  dispatch: jest.fn(),
-  getPokemonData: jest.fn(),
-  getPokemonDetailsListByUrl: jest.fn(),
-  setAppLoading: jest.fn()
+  getPokemonData: jest.fn()
 };
 
-jest.mock('../../context/pokemonContext/pokemon.provider', () => ({
-  PokemonProvider: ({ children }: any) => {
-    const React = require('react');
-    const PokemonContext = require('../../context/pokemonContext/pokmon.context').default;
-    return React.createElement(PokemonContext.Provider, { value: mockContextValue }, children);
-  }
-}));
-
-import { PokemonProvider } from '../../context/pokemonContext/pokemon.provider';
-
-// Mock the child components
+// Mock all dependencies
 jest.mock('../../components/header/header', () => {
-  return function MockHeader({ children }: any) {
-    return <div data-testid="header">{children}</div>;
+  return function MockHeader({ children, className }: any) {
+    return <div data-testid="header" className={className}>{children}</div>;
   };
 });
 
 jest.mock('../../components/pokemonCard/pokemonCard', () => {
   return function MockPokemonCard({ data, onClick }: any) {
     return (
-      <div data-testid="pokemon-card" onClick={() => onClick && onClick(data)}>
+      <div data-testid="pokemon-card" onClick={onClick}>
         {data.name}
       </div>
     );
@@ -89,195 +103,585 @@ jest.mock('../../components/loader/loader', () => {
 });
 
 jest.mock('../../components/filter/filter', () => {
-  return function MockFilter() {
+  return function MockFilter({ isFilterEnable }: any) {
     return <div data-testid="filter">Filter Component</div>;
   };
 });
 
 jest.mock('../details/details.page', () => {
-  return function MockDetailPage() {
-    return <div data-testid="detail-page">Detail Page</div>;
+  return function MockDetailPage({ isCardSelected, toggleModal, pokemonId }: any) {
+    return (
+      <div data-testid="detail-page" style={{ display: isCardSelected ? 'block' : 'none' }}>
+        Detail Page for Pokemon {pokemonId}
+      </div>
+    );
   };
 });
 
-// Mock the services
-jest.mock('../../services/common.service', () => ({
-  allPokemonURL: 'https://pokeapi.co/api/v2/pokemon',
-  initialURL: 'https://pokeapi.co/api/v2/pokemon?limit=20&offset=0'
+// Mock RSuite components
+jest.mock('rsuite', () => ({
+  Button: ({ children, onClick, appearance }: any) => (
+    <button data-testid="load-more-button" onClick={onClick} className={appearance}>
+      {children}
+    </button>
+  ),
+  Row: ({ children, ...props }: any) => <div data-testid="row" {...props}>{children}</div>,
+  Col: ({ children, ...props }: any) => <div data-testid="col" {...props}>{children}</div>,
 }));
 
-// Mock fetch
-global.fetch = jest.fn((url: string) => {
-  if (url.includes('pokemon/1')) {
-    return Promise.resolve({
-      json: () => Promise.resolve({
-        id: 1,
-        name: 'bulbasaur',
-        sprites: {
-          front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-          other: {
-            dream_world: {
-              front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg'
-            }
-          }
-        },
-        types: [
-          {
-            slot: 1,
-            type: { name: 'grass', url: 'https://pokeapi.co/api/v2/type/12/' }
-          }
-        ]
-      })
-    });
+// Mock CSS imports
+jest.mock('./home.scss', () => ({}));
+jest.mock('../../styles/common.scss', () => ({}));
+
+// Mock context
+jest.mock('../../context/pokemonContext/pokmon.context', () => ({
+  __esModule: true,
+  default: {
+    Consumer: ({ children }: any) => children(mockContext),
+    Provider: ({ children }: any) => children,
+    _currentValue: mockContext
   }
-  if (url.includes('pokemon/2')) {
-    return Promise.resolve({
-      json: () => Promise.resolve({
-        id: 2,
-        name: 'ivysaur',
-        sprites: {
-          front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png',
-          other: {
-            dream_world: {
-              front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/2.svg'
-            }
-          }
-        },
-        types: [
-          {
-            slot: 1,
-            type: { name: 'grass', url: 'https://pokeapi.co/api/v2/type/12/' }
-          }
-        ]
-      })
-    });
-  }
-  if (url.includes('pokemon?limit=1100')) {
-    return Promise.resolve({
-      json: () => Promise.resolve({ 
-        results: [
-          { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/' },
-          { name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon/2/' }
-        ] 
-      }),
-    });
-  }
-  return Promise.resolve({
-    json: () => Promise.resolve({ 
-      next: null, 
-      results: [
-        { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/' },
-        { name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon/2/' }
-      ] 
-    }),
-  });
-}) as jest.Mock;
+}));
 
 import HomePage from './home.page';
-
-// Helper function to render HomePage with provider
-const renderWithProvider = (component: React.ReactElement) => {
-  return render(
-    <PokemonProvider>
-      {component}
-    </PokemonProvider>
-  );
-};
 
 describe('HomePage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders header with title', () => {
-    renderWithProvider(<HomePage />);
+  it('renders without crashing', () => {
+    render(<HomePage />);
+    expect(screen.getByTestId('header')).toBeInTheDocument();
+  });
+
+  it('renders header with correct content', () => {
+    render(<HomePage />);
     
-    const header = screen.getByTestId('header');
-    expect(header).toBeInTheDocument();
+    expect(screen.getByText('Pokédex')).toBeInTheDocument();
+    expect(screen.getByText('Search for any Pokémon that exist on the planet')).toBeInTheDocument();
   });
 
   it('renders filter component', () => {
-    renderWithProvider(<HomePage />);
-    
+    render(<HomePage />);
     expect(screen.getByTestId('filter')).toBeInTheDocument();
   });
 
   it('renders pokemon cards when data is available', () => {
-    renderWithProvider(<HomePage />);
+    render(<HomePage />);
     
     const pokemonCards = screen.getAllByTestId('pokemon-card');
     expect(pokemonCards).toHaveLength(2);
-    expect(pokemonCards[0]).toHaveTextContent('bulbasaur');
-    expect(pokemonCards[1]).toHaveTextContent('ivysaur');
+    expect(screen.getByText('bulbasaur')).toBeInTheDocument();
+    expect(screen.getByText('ivysaur')).toBeInTheDocument();
   });
 
-  it('renders loader when loading', () => {
-    renderWithProvider(<HomePage />);
+  it('shows load more button when filter is not enabled', () => {
+    render(<HomePage />);
     
-    // Since the mock context has isLoading: false, we expect no loader
-    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
-  });
-
-  it('renders load more button when not loading', () => {
-    renderWithProvider(<HomePage />);
-    
-    expect(screen.getByText('Load more')).toBeInTheDocument();
-  });
-
-  it('renders load more loader when loading more', () => {
-    renderWithProvider(<HomePage />);
-    
-    const loadMoreButton = screen.getByText('Load more');
+    const loadMoreButton = screen.getByTestId('load-more-button');
     expect(loadMoreButton).toBeInTheDocument();
+    expect(loadMoreButton).toHaveTextContent('Load more');
   });
 
   it('calls getPokemonData when load more button is clicked', () => {
-    renderWithProvider(<HomePage />);
+    render(<HomePage />);
     
-    const loadMoreButton = screen.getByText('Load more');
+    const loadMoreButton = screen.getByTestId('load-more-button');
     fireEvent.click(loadMoreButton);
     
-    // Note: This test will need to be updated based on actual implementation
+    expect(mockContext.getPokemonData).toHaveBeenCalled();
   });
 
-  it('renders detail page when pokemonId is set', () => {
-    renderWithProvider(<HomePage />);
+  it('shows loader when loading more data', () => {
+    const loadingContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        isLoadMoreInprogress: true
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(loadingContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: loadingContext
+      }
+    }));
+
+    render(<HomePage />);
     
-    // Click on a pokemon card to set pokemonId
+    const loaders = screen.getAllByTestId('loader');
+    expect(loaders.length).toBeGreaterThan(0);
+  });
+
+  it('shows main loader when isLoading is true', () => {
+    const loadingContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        isLoading: true
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(loadingContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: loadingContext
+      }
+    }));
+
+    render(<HomePage />);
+    
+    const loaders = screen.getAllByTestId('loader');
+    expect(loaders.length).toBeGreaterThan(0);
+  });
+
+  it('shows no data message when pokemonsList is empty', () => {
+    const emptyContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonsList: []
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(emptyContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: emptyContext
+      }
+    }));
+
+    render(<HomePage />);
+    
+    expect(screen.getByText('No data found')).toBeInTheDocument();
+  });
+
+  it('opens detail page when pokemon card is clicked', async () => {
+    render(<HomePage />);
+    
     const pokemonCards = screen.getAllByTestId('pokemon-card');
+    fireEvent.click(pokemonCards[0]); // Click first pokemon card
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('detail-page')).toBeInTheDocument();
+    });
+  });
+
+  it('closes detail page when toggleModal is called', async () => {
+    render(<HomePage />);
+    
+    const pokemonCards = screen.getAllByTestId('pokemon-card');
+    fireEvent.click(pokemonCards[0]); // Open detail page
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('detail-page')).toBeInTheDocument();
+    });
+    
+    // Click again to close
     fireEvent.click(pokemonCards[0]);
     
-    // Should render detail page
-    expect(screen.getByTestId('detail-page')).toBeInTheDocument();
+    await waitFor(() => {
+      const detailPage = screen.getByTestId('detail-page');
+      expect(detailPage).toHaveStyle({ display: 'none' });
+    });
   });
 
-  it('renders empty state when no pokemon data', () => {
-    renderWithProvider(<HomePage />);
+  it('sets correct pokemon ID when card is clicked', async () => {
+    render(<HomePage />);
     
-    // Since the mock context has pokemon data, we expect cards to be present
-    const pokemonCards = screen.queryAllByTestId('pokemon-card');
+    const pokemonCards = screen.getAllByTestId('pokemon-card');
+    fireEvent.click(pokemonCards[1]); // Click second pokemon card (ivysaur, id: 2)
+    
+    await waitFor(() => {
+      expect(screen.getByText('Detail Page for Pokemon 2')).toBeInTheDocument();
+    });
+  });
+
+  it('handles filter enable state correctly', () => {
+    render(<HomePage />);
+    
+    // Initially filter should not be enabled
+    expect(screen.getByTestId('load-more-button')).toBeInTheDocument();
+  });
+
+  it('renders with proper CSS classes', () => {
+    render(<HomePage />);
+    
+    expect(screen.getByText('Pokédex')).toBeInTheDocument();
+    expect(screen.getByText('Search for any Pokémon that exist on the planet')).toBeInTheDocument();
+  });
+
+  it('handles context error when context is not provided', () => {
+    // Mock context to return null
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(null),
+        Provider: ({ children }: any) => children,
+        _currentValue: null
+      }
+    }));
+
+    expect(() => {
+      render(<HomePage />);
+    }).toThrow('PokemonContext must be used within a PokemonProvider');
+  });
+
+  it('renders responsive wrapper for each pokemon card', () => {
+    render(<HomePage />);
+    
+    const pokemonCards = screen.getAllByTestId('pokemon-card');
     expect(pokemonCards).toHaveLength(2);
   });
 
-  it('handles pokemon card click', () => {
-    renderWithProvider(<HomePage />);
+  it('handles empty pokemonsList gracefully', () => {
+    const emptyContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonsList: []
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(emptyContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: emptyContext
+      }
+    }));
+
+    render(<HomePage />);
     
-    const pokemonCards = screen.getAllByTestId('pokemon-card');
-    fireEvent.click(pokemonCards[0]);
-    
-    // The pokemonId should be set to 1 (bulbasaur's id)
-    expect(screen.getByTestId('detail-page')).toBeInTheDocument();
+    expect(screen.getByText('No data found')).toBeInTheDocument();
+    expect(screen.queryByTestId('pokemon-card')).not.toBeInTheDocument();
   });
 
-  it('renders with filter enabled', () => {
-    renderWithProvider(<HomePage />);
+  it('handles null pokemonsList gracefully', () => {
+    const nullContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonsList: null
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(nullContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: nullContext
+      }
+    }));
+
+    render(<HomePage />);
     
-    // Initially filter should be enabled
+    expect(screen.getByText('No data found')).toBeInTheDocument();
+  });
+
+  it('handles undefined pokemonsList gracefully', () => {
+    const undefinedContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonsList: undefined
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(undefinedContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: undefinedContext
+      }
+    }));
+
+    render(<HomePage />);
+    
+    expect(screen.getByText('No data found')).toBeInTheDocument();
+  });
+
+  it('handles filter enable state correctly', () => {
+    const mockIsFilterEnable = jest.fn();
+    render(<HomePage />);
+    
+    // Initially filter should not be enabled
+    expect(screen.getByTestId('load-more-button')).toBeInTheDocument();
+  });
+
+  it('handles loading state correctly', () => {
+    const loadingContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        isLoading: true,
+        isLoadMoreInprogress: false
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(loadingContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: loadingContext
+      }
+    }));
+
+    render(<HomePage />);
+    
+    const loaders = screen.getAllByTestId('loader');
+    expect(loaders.length).toBeGreaterThan(0);
+  });
+
+  it('handles load more in progress state', () => {
+    const loadMoreContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        isLoading: false,
+        isLoadMoreInprogress: true
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(loadMoreContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: loadMoreContext
+      }
+    }));
+
+    render(<HomePage />);
+    
+    const loaders = screen.getAllByTestId('loader');
+    expect(loaders.length).toBeGreaterThan(0);
+  });
+
+  it('handles both loading states simultaneously', () => {
+    const bothLoadingContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        isLoading: true,
+        isLoadMoreInprogress: true
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(bothLoadingContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: bothLoadingContext
+      }
+    }));
+
+    render(<HomePage />);
+    
+    const loaders = screen.getAllByTestId('loader');
+    expect(loaders.length).toBeGreaterThan(0);
+  });
+
+  it('handles pokemon card click with valid data', async () => {
+    render(<HomePage />);
+    
+    const pokemonCards = screen.getAllByTestId('pokemon-card');
+    expect(pokemonCards).toHaveLength(2);
+    
+    fireEvent.click(pokemonCards[0]);
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('detail-page')).toBeInTheDocument();
+    });
+  });
+
+  it('handles multiple pokemon card clicks', async () => {
+    render(<HomePage />);
+    
+    const pokemonCards = screen.getAllByTestId('pokemon-card');
+    
+    // Click first card
+    fireEvent.click(pokemonCards[0]);
+    await waitFor(() => {
+      expect(screen.getByText('Detail Page for Pokemon 1')).toBeInTheDocument();
+    });
+    
+    // Click second card
+    fireEvent.click(pokemonCards[1]);
+    await waitFor(() => {
+      expect(screen.getByText('Detail Page for Pokemon 2')).toBeInTheDocument();
+    });
+  });
+
+  it('handles modal toggle correctly', async () => {
+    render(<HomePage />);
+    
+    const pokemonCards = screen.getAllByTestId('pokemon-card');
+    
+    // Open modal
+    fireEvent.click(pokemonCards[0]);
+    await waitFor(() => {
+      expect(screen.getByTestId('detail-page')).toBeInTheDocument();
+    });
+    
+    // Close modal by clicking again
+    fireEvent.click(pokemonCards[0]);
+    await waitFor(() => {
+      const detailPage = screen.getByTestId('detail-page');
+      expect(detailPage).toHaveStyle({ display: 'none' });
+    });
+  });
+
+  it('handles load more button click', () => {
+    render(<HomePage />);
+    
+    const loadMoreButton = screen.getByTestId('load-more-button');
+    expect(loadMoreButton).toBeInTheDocument();
+    
+    fireEvent.click(loadMoreButton);
+    
+    expect(mockContext.getPokemonData).toHaveBeenCalled();
+  });
+
+  it('handles multiple load more button clicks', () => {
+    render(<HomePage />);
+    
+    const loadMoreButton = screen.getByTestId('load-more-button');
+    
+    fireEvent.click(loadMoreButton);
+    fireEvent.click(loadMoreButton);
+    fireEvent.click(loadMoreButton);
+    
+    expect(mockContext.getPokemonData).toHaveBeenCalledTimes(3);
+  });
+
+  it('handles filter enable callback', () => {
+    render(<HomePage />);
+    
+    // The filter component should be rendered
     expect(screen.getByTestId('filter')).toBeInTheDocument();
   });
 
-  it('handles context error gracefully', () => {
-    // Should not crash
-    expect(() => renderWithProvider(<HomePage />)).not.toThrow();
+  it('handles header content correctly', () => {
+    render(<HomePage />);
+    
+    expect(screen.getByText('Pokédex')).toBeInTheDocument();
+    expect(screen.getByText('Search for any Pokémon that exist on the planet')).toBeInTheDocument();
+  });
+
+  it('handles pokemon card rendering with data', () => {
+    render(<HomePage />);
+    
+    const pokemonCards = screen.getAllByTestId('pokemon-card');
+    expect(pokemonCards).toHaveLength(2);
+    
+    expect(screen.getByText('bulbasaur')).toBeInTheDocument();
+    expect(screen.getByText('ivysaur')).toBeInTheDocument();
+  });
+
+  it('handles pokemon card click event propagation', async () => {
+    render(<HomePage />);
+    
+    const pokemonCards = screen.getAllByTestId('pokemon-card');
+    
+    // Verify the click handler is properly attached
+    expect(pokemonCards[0]).toBeInTheDocument();
+    
+    fireEvent.click(pokemonCards[0]);
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('detail-page')).toBeInTheDocument();
+    });
+  });
+
+  it('handles component unmounting gracefully', () => {
+    const { unmount } = render(<HomePage />);
+    
+    expect(() => {
+      unmount();
+    }).not.toThrow();
+  });
+
+  it('handles re-rendering correctly', () => {
+    const { rerender } = render(<HomePage />);
+    
+    expect(() => {
+      rerender(<HomePage />);
+    }).not.toThrow();
+    
+    // Should still render the same content
+    expect(screen.getByText('Pokédex')).toBeInTheDocument();
+  });
+
+  it('handles context changes correctly', () => {
+    const { rerender } = render(<HomePage />);
+    
+    const newContext = {
+      ...mockContext,
+      state: {
+        ...mockContext.state,
+        pokemonsList: [
+          {
+            id: 3,
+            name: 'venusaur',
+            base_experience: 236,
+            height: 20,
+            weight: 1000,
+            sprites: {
+              front_default: 'https://example.com/venusaur.png',
+              front_shiny: null,
+              front_female: null,
+              front_shiny_female: null,
+              back_default: null,
+              back_shiny: null,
+              back_female: null,
+              back_shiny_female: null,
+              other: {
+                dream_world: { front_default: null, front_female: null },
+                home: { front_default: null, front_female: null, front_shiny: null, front_shiny_female: null },
+                'official-artwork': { front_default: null, front_shiny: null }
+              }
+            },
+            types: [],
+            stats: [],
+            abilities: [],
+            moves: [],
+            species: { name: 'venusaur', url: 'https://example.com/species/3' },
+            forms: [],
+            game_indices: [],
+            held_items: [],
+            location_area_encounters: '',
+            order: 3,
+            past_types: []
+          }
+        ]
+      }
+    };
+
+    jest.doMock('../../context/pokemonContext/pokmon.context', () => ({
+      __esModule: true,
+      default: {
+        Consumer: ({ children }: any) => children(newContext),
+        Provider: ({ children }: any) => children,
+        _currentValue: newContext
+      }
+    }));
+
+    rerender(<HomePage />);
+    
+    expect(screen.getByText('venusaur')).toBeInTheDocument();
   });
 });

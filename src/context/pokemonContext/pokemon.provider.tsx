@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useRef, ReactNode } from 'react';
+import React, { useReducer, useEffect, useRef, ReactNode, useContext } from 'react';
 import { initialState, reducer } from '../../store/reducers/reducer';
 import PokemonContext from './pokmon.context';
 import { Pokemon, PokemonContextType } from '../../types/pokemon.types';
@@ -10,6 +10,14 @@ import {
 interface PokemonProviderProps {
   children: ReactNode;
 }
+
+export const usePokemonContext = (): PokemonContextType => {
+  const context = useContext(PokemonContext);
+  if (context === undefined) {
+    throw new Error('usePokemonContext must be used within a PokemonProvider');
+  }
+  return context;
+};
 
 export const PokemonProvider: React.FC<PokemonProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);

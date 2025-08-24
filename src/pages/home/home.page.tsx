@@ -76,7 +76,7 @@ const HomePage: React.FC = () => {
             <AppFilter isFilterEnable={isFilterEnableHandler} />
           </div>
         </div>
-        {pokemonsList.length > 0 && (
+        {pokemonsList && pokemonsList.length > 0 && (
           <div>
             <div className="card-list">
               {pokemonsListView}
@@ -93,7 +93,7 @@ const HomePage: React.FC = () => {
             )}
           </div>
         )}
-        {!pokemonsList.length && (
+        {(!pokemonsList || !pokemonsList.length) && (
           <div className="no-data-found">
             <span>No data found</span>
           </div>

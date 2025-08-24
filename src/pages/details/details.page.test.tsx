@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import DetailPage from './details.page';
 import * as commonService from '../../services/common.service';
@@ -379,14 +379,16 @@ describe('DetailPage', () => {
   it('handles API errors gracefully', async () => {
     mockedCommonService.getPokemonDataById.mockRejectedValue(new Error('API Error'));
 
-    render(
-      <DetailPage
-        isCardSelected={true}
-        toggleModal={mockToggleModal}
-        pokemonId={1}
-        offset={20}
-      />
-    );
+    await act(async () => {
+      render(
+        <DetailPage
+          isCardSelected={true}
+          toggleModal={mockToggleModal}
+          pokemonId={1}
+          offset={20}
+        />
+      );
+    });
 
     // When API fails, the component should still render but show loading state
     await waitFor(() => {
