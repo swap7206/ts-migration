@@ -35,9 +35,49 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     return `Male ${malePercentage}%, Female ${femalePercentage}%`;
   };
 
-  // Helper function to capitalize first letter
-  const capitalize = (str: string) => {
+  // Helper function to capitalize first letter with safety checks
+  const capitalize = (str: string | undefined | null) => {
+    if (!str || typeof str !== 'string') return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  // Helper function to safely get ability names
+  const getAbilityNames = (abilities: any[]) => {
+    if (!abilities || !Array.isArray(abilities)) return 'N/A';
+    
+    return abilities
+      .map(ability => {
+        if (!ability || !ability.ability || !ability.ability.name) return null;
+        return capitalize(ability.ability.name) + (ability.is_hidden ? ' (Hidden)' : '');
+      })
+      .filter(Boolean)
+      .join(', ') || 'N/A';
+  };
+
+  // Helper function to safely get type names
+  const getTypeNames = (types: any[]) => {
+    if (!types || !Array.isArray(types)) return 'N/A';
+    
+    return types
+      .map(type => {
+        if (!type || !type.type || !type.type.name) return null;
+        return capitalize(type.type.name);
+      })
+      .filter(Boolean)
+      .join(', ') || 'N/A';
+  };
+
+  // Helper function to safely get egg group names
+  const getEggGroupNames = (eggGroups: any[]) => {
+    if (!eggGroups || !Array.isArray(eggGroups)) return 'N/A';
+    
+    return eggGroups
+      .map(group => {
+        if (!group || !group.name) return null;
+        return capitalize(group.name);
+      })
+      .filter(Boolean)
+      .join(', ') || 'N/A';
   };
 
   return (
@@ -61,12 +101,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <>
             <div className="property-item">
               <span className="property-label">Gender(s):</span>
-              <span className="property-value">{getGenderText(speciesData.gender_rate)}</span>
+              <span className="property-value">{getGenderText(speciesData.gender_rate || 0)}</span>
             </div>
             <div className="property-item">
               <span className="property-label">Egg Groups:</span>
               <span className="property-value">
-                {speciesData.egg_groups?.map(group => capitalize(group.name)).join(', ') || 'N/A'}
+                {getEggGroupNames(speciesData.egg_groups)}
               </span>
             </div>
             <div className="property-item">
@@ -83,16 +123,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         <div className="property-item">
           <span className="property-label">Abilities:</span>
           <span className="property-value">
-            {pokemonData.abilities?.map(ability => 
-              capitalize(ability.ability.name) + (ability.is_hidden ? ' (Hidden)' : '')
-            ).join(', ') || 'N/A'}
+            {getAbilityNames(pokemonData.abilities)}
           </span>
         </div>
         
         <div className="property-item">
           <span className="property-label">Types:</span>
           <span className="property-value">
-            {pokemonData.types?.map(type => capitalize(type.type.name)).join(', ') || 'N/A'}
+            {getTypeNames(pokemonData.types)}
           </span>
         </div>
         
@@ -100,7 +138,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <span className="property-label">Weak Against:</span>
           <span className="property-value">
             {pokemonTypeData?.damage_relations?.double_damage_from?.map((type: any) => 
-              capitalize(type.name)
+              capitalize(type?.name)
             ).join(', ') || 'N/A'}
           </span>
         </div>

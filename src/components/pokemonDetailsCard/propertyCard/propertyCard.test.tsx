@@ -3,338 +3,586 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PropertyCard from './propertyCard';
 
+// Mock CSS imports
+jest.mock('./propertyCard.scss', () => ({}));
+
 describe('PropertyCard', () => {
-  const mockPokemon = {
-    id: 1,
-    name: 'bulbasaur',
-    height: 7,
-    weight: 69,
-    base_experience: 64,
-    sprites: {
-      front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-      front_shiny: null,
-      front_female: null,
-      front_shiny_female: null,
-      back_default: null,
-      back_shiny: null,
-      back_female: null,
-      back_shiny_female: null,
-      other: {
-        dream_world: { front_default: null, front_female: null },
-        home: { front_default: null, front_female: null, front_shiny: null, front_shiny_female: null },
-        'official-artwork': { front_default: null, front_shiny: null }
-      }
-    },
-    stats: [],
-    moves: [],
-    species: { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon-species/1/' },
-    forms: [],
-    game_indices: [],
-    held_items: [],
-    location_area_encounters: '',
-    order: 1,
-    past_types: [],
+  const mockPokemonData = {
+    id: 25,
+    name: 'pikachu',
+    height: 40,
+    weight: 60,
+    base_experience: 112,
     abilities: [
       {
-        ability: { name: 'overgrow', url: 'https://pokeapi.co/api/v2/ability/65/' },
+        ability: { name: 'static', url: 'https://pokeapi.co/api/v2/ability/9/' },
         is_hidden: false,
         slot: 1
+      },
+      {
+        ability: { name: 'lightning-rod', url: 'https://pokeapi.co/api/v2/ability/31/' },
+        is_hidden: true,
+        slot: 3
       }
     ],
     types: [
-      {
-        slot: 1,
-        type: { name: 'grass', url: 'https://pokeapi.co/api/v2/type/12/' }
-      },
-      {
-        slot: 2,
-        type: { name: 'poison', url: 'https://pokeapi.co/api/v2/type/4/' }
-      }
+      { type: { name: 'electric', url: 'https://pokeapi.co/api/v2/type/13/' } }
     ]
   };
 
   const mockSpeciesData = {
-    id: 1,
-    name: 'bulbasaur',
-    order: 1,
-    gender_rate: 1,
-    capture_rate: 45,
-    base_happiness: 70,
-    is_baby: false,
-    is_legendary: false,
-    is_mythical: false,
-    hatch_counter: 20,
-    has_gender_differences: false,
-    forms_switchable: false,
-    growth_rate: { name: 'medium-slow', url: 'https://pokeapi.co/api/v2/growth-rate/4/' },
-    pokedex_numbers: [],
-    form_descriptions: [],
-    genera: [],
-    varieties: [],
-    flavor_text_entries: [],
+    gender_rate: 4,
     egg_groups: [
-      { name: 'monster', url: 'https://pokeapi.co/api/v2/egg-group/1/' },
-      { name: 'plant', url: 'https://pokeapi.co/api/v2/egg-group/7/' }
+      { name: 'fairy', url: 'https://pokeapi.co/api/v2/egg-group/6/' },
+      { name: 'mineral', url: 'https://pokeapi.co/api/v2/egg-group/10/' }
     ],
-    habitat: { name: 'grassland', url: 'https://pokeapi.co/api/v2/pokemon-habitat/3/' }
+    capture_rate: 190,
+    base_happiness: 50
   };
 
-  it('renders pokemon properties correctly', () => {
-    render(<PropertyCard data={mockPokemon} speciesData={mockSpeciesData} />);
-    
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
-    expect(screen.getByText(/Weight/)).toBeInTheDocument();
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
-    expect(screen.getByText(/Gender/)).toBeInTheDocument();
-    expect(screen.getByText(/Egg Groups/)).toBeInTheDocument();
-    expect(screen.getByText(/Abilities/)).toBeInTheDocument();
-    expect(screen.getByText(/Types/)).toBeInTheDocument();
-    expect(screen.getByText(/Weak Against/)).toBeInTheDocument();
+  const mockPokemonTypeData = {
+    damage_relations: {
+      double_damage_from: [
+        { name: 'ground' }
+      ],
+      double_damage_to: [
+        { name: 'water' },
+        { name: 'flying' }
+      ],
+      half_damage_from: [
+        { name: 'flying' },
+        { name: 'steel' },
+        { name: 'electric' }
+      ],
+      half_damage_to: [
+        { name: 'electric' },
+        { name: 'grass' },
+        { name: 'dragon' }
+      ],
+      no_damage_from: [],
+      no_damage_to: [
+        { name: 'ground' }
+      ]
+    }
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('renders without species data', () => {
-    render(<PropertyCard data={mockPokemon} />);
+  it('renders with valid pokemon data', () => {
+    render(<PropertyCard data={mockPokemonData} />);
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
-    expect(screen.getByText(/Weight/)).toBeInTheDocument();
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
+    expect(screen.getByText('Properties')).toBeInTheDocument();
+    expect(screen.getByText('4.0 m')).toBeInTheDocument();
+    expect(screen.getByText('6.0 kg')).toBeInTheDocument();
+    expect(screen.getByText('112')).toBeInTheDocument();
   });
 
-  it('renders correctly with different gender rates', () => {
-    const differentGenderPokemon = {
-      ...mockPokemon,
-      gender_rate: 1
+  it('renders with species data', () => {
+    render(<PropertyCard data={mockPokemonData} speciesData={mockSpeciesData} />);
+    
+    expect(screen.getByText('Male 50%, Female 50%')).toBeInTheDocument();
+    expect(screen.getByText('Fairy, Mineral')).toBeInTheDocument();
+    expect(screen.getByText('190')).toBeInTheDocument();
+    expect(screen.getByText('50')).toBeInTheDocument();
+  });
+
+  it('renders with pokemon type data', () => {
+    render(<PropertyCard data={mockPokemonData} pokemonTypeData={mockPokemonTypeData} />);
+    
+    expect(screen.getByText('Ground')).toBeInTheDocument();
+  });
+
+  it('renders with all data', () => {
+    render(
+      <PropertyCard 
+        data={mockPokemonData} 
+        speciesData={mockSpeciesData} 
+        pokemonTypeData={mockPokemonTypeData} 
+      />
+    );
+    
+    expect(screen.getByText('Properties')).toBeInTheDocument();
+    expect(screen.getByText('4.0 m')).toBeInTheDocument();
+    expect(screen.getByText('6.0 kg')).toBeInTheDocument();
+    expect(screen.getByText('112')).toBeInTheDocument();
+    expect(screen.getByText('Male 50%, Female 50%')).toBeInTheDocument();
+    expect(screen.getByText('Fairy, Mineral')).toBeInTheDocument();
+    expect(screen.getByText('190')).toBeInTheDocument();
+    expect(screen.getByText('50')).toBeInTheDocument();
+    expect(screen.getByText('Static, Lightning-rod (Hidden)')).toBeInTheDocument();
+    expect(screen.getByText('Electric')).toBeInTheDocument();
+    expect(screen.getByText('Ground')).toBeInTheDocument();
+  });
+
+  it('renders with custom className', () => {
+    render(<PropertyCard data={mockPokemonData} className="custom-class" />);
+    
+    const container = screen.getByText('Properties').closest('.custom-class');
+    expect(container).toBeInTheDocument();
+  });
+
+  it('handles null data', () => {
+    render(<PropertyCard data={null} />);
+    
+    expect(screen.getByText('Properties')).toBeInTheDocument();
+    expect(screen.getByText('0.0 m')).toBeInTheDocument();
+    expect(screen.getByText('0.0 kg')).toBeInTheDocument();
+    // Check that N/A appears in the base experience section
+    const baseExpSection = screen.getByText('Base Experience:').closest('.property-item');
+    expect(baseExpSection).toHaveTextContent('N/A');
+  });
+
+  it('handles undefined data', () => {
+    render(<PropertyCard data={undefined} />);
+    
+    expect(screen.getByText('Properties')).toBeInTheDocument();
+    expect(screen.getByText('0.0 m')).toBeInTheDocument();
+    expect(screen.getByText('0.0 kg')).toBeInTheDocument();
+    // Check that N/A appears in the base experience section
+    const baseExpSection = screen.getByText('Base Experience:').closest('.property-item');
+    expect(baseExpSection).toHaveTextContent('N/A');
+  });
+
+  it('handles pokemon with null base experience', () => {
+    const pokemonWithNullExp = {
+      ...mockPokemonData,
+      base_experience: null
     };
     
-    render(<PropertyCard data={differentGenderPokemon} speciesData={mockSpeciesData} />);
+    render(<PropertyCard data={pokemonWithNullExp} />);
     
-    expect(screen.getByText(/Gender/)).toBeInTheDocument();
-    expect(screen.getByText(/Male/)).toBeInTheDocument();
-    expect(screen.getByText(/Female/)).toBeInTheDocument();
+    // Find the base experience section specifically
+    const baseExpSection = screen.getByText('Base Experience:').closest('.property-item');
+    expect(baseExpSection).toHaveTextContent('N/A');
   });
 
-  it('handles missing abilities', () => {
-    const noAbilitiesPokemon = {
-      ...mockPokemon,
-      abilities: null
+  it('handles pokemon with undefined base experience', () => {
+    const pokemonWithUndefinedExp = {
+      ...mockPokemonData,
+      base_experience: undefined
     };
     
-    render(<PropertyCard data={noAbilitiesPokemon} speciesData={mockSpeciesData} />);
+    render(<PropertyCard data={pokemonWithUndefinedExp} />);
     
-    expect(screen.getByText(/Abilities/)).toBeInTheDocument();
+    // Find the base experience section specifically
+    const baseExpSection = screen.getByText('Base Experience:').closest('.property-item');
+    expect(baseExpSection).toHaveTextContent('N/A');
   });
 
-  it('handles missing egg groups', () => {
-    const noEggGroupsSpecies = {
+  it('handles pokemon with zero base experience', () => {
+    const pokemonWithZeroExp = {
+      ...mockPokemonData,
+      base_experience: 0
+    };
+    
+    render(<PropertyCard data={pokemonWithZeroExp} />);
+    
+    expect(screen.getByText('0')).toBeInTheDocument();
+  });
+
+  it('handles pokemon with zero height and weight', () => {
+    const pokemonWithZeroStats = {
+      ...mockPokemonData,
+      height: 0,
+      weight: 0
+    };
+    
+    render(<PropertyCard data={pokemonWithZeroStats} />);
+    
+    expect(screen.getByText('0.0 m')).toBeInTheDocument();
+    expect(screen.getByText('0.0 kg')).toBeInTheDocument();
+  });
+
+  it('handles pokemon with decimal height and weight', () => {
+    const pokemonWithDecimalStats = {
+      ...mockPokemonData,
+      height: 45,
+      weight: 67
+    };
+    
+    render(<PropertyCard data={pokemonWithDecimalStats} />);
+    
+    expect(screen.getByText('4.5 m')).toBeInTheDocument();
+    expect(screen.getByText('6.7 kg')).toBeInTheDocument();
+  });
+
+  it('handles gender rate -1 (Genderless)', () => {
+    const speciesDataGenderless = {
+      ...mockSpeciesData,
+      gender_rate: -1
+    };
+    
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataGenderless} />);
+    
+    expect(screen.getByText('Genderless')).toBeInTheDocument();
+  });
+
+  it('handles gender rate 0 (Male only)', () => {
+    const speciesDataMaleOnly = {
+      ...mockSpeciesData,
+      gender_rate: 0
+    };
+    
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataMaleOnly} />);
+    
+    expect(screen.getByText('Male only')).toBeInTheDocument();
+  });
+
+  it('handles gender rate 8 (Female only)', () => {
+    const speciesDataFemaleOnly = {
+      ...mockSpeciesData,
+      gender_rate: 8
+    };
+    
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataFemaleOnly} />);
+    
+    expect(screen.getByText('Female only')).toBeInTheDocument();
+  });
+
+  it('handles gender rate with percentage calculation', () => {
+    const speciesDataWithPercentage = {
+      ...mockSpeciesData,
+      gender_rate: 2
+    };
+    
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataWithPercentage} />);
+    
+    expect(screen.getByText('Male 75%, Female 25%')).toBeInTheDocument();
+  });
+
+  it('handles species data without egg groups', () => {
+    const speciesDataWithoutEggGroups = {
       ...mockSpeciesData,
       egg_groups: null
     };
     
-    render(<PropertyCard data={mockPokemon} speciesData={noEggGroupsSpecies} />);
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataWithoutEggGroups} />);
     
-    expect(screen.getByText(/Egg Groups/)).toBeInTheDocument();
+    // Find the egg groups section specifically
+    const eggGroupsSection = screen.getByText('Egg Groups:').closest('.property-item');
+    expect(eggGroupsSection).toHaveTextContent('N/A');
   });
 
-  it('handles missing habitat', () => {
-    const noHabitatSpecies = {
+  it('handles species data with empty egg groups', () => {
+    const speciesDataWithEmptyEggGroups = {
       ...mockSpeciesData,
-      habitat: null
+      egg_groups: []
     };
     
-    render(<PropertyCard data={mockPokemon} speciesData={noHabitatSpecies} />);
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataWithEmptyEggGroups} />);
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
+    // Find the egg groups section specifically
+    const eggGroupsSection = screen.getByText('Egg Groups:').closest('.property-item');
+    expect(eggGroupsSection).toHaveTextContent('N/A');
   });
 
-  it('renders with custom className', () => {
-    const { container } = render(
-      <PropertyCard 
-        data={mockPokemon} 
-        speciesData={mockSpeciesData} 
-        className="custom-class" 
-      />
-    );
+  it('handles species data with single egg group', () => {
+    const speciesDataWithSingleEggGroup = {
+      ...mockSpeciesData,
+      egg_groups: [{ name: 'monster' }]
+    };
     
-    expect(container.firstChild).toHaveClass('custom-class');
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataWithSingleEggGroup} />);
+    
+    expect(screen.getByText('Monster')).toBeInTheDocument();
   });
 
-  it('renders abilities', () => {
-    render(<PropertyCard data={mockPokemon} speciesData={mockSpeciesData} />);
+  it('handles species data with null capture rate', () => {
+    const speciesDataWithNullCaptureRate = {
+      ...mockSpeciesData,
+      capture_rate: null
+    };
     
-    expect(screen.getByText('Overgrow')).toBeInTheDocument();
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataWithNullCaptureRate} />);
+    
+    // Find the capture rate section specifically
+    const captureRateSection = screen.getByText('Capture Rate:').closest('.property-item');
+    expect(captureRateSection).toHaveTextContent('N/A');
   });
 
-  it('renders types', () => {
-    render(<PropertyCard data={mockPokemon} speciesData={mockSpeciesData} />);
+  it('handles species data with null base happiness', () => {
+    const speciesDataWithNullHappiness = {
+      ...mockSpeciesData,
+      base_happiness: null
+    };
     
-    expect(screen.getByText(/Grass/)).toBeInTheDocument();
-    expect(screen.getByText(/Poison/)).toBeInTheDocument();
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataWithNullHappiness} />);
+    
+    // Find the base happiness section specifically
+    const baseHappinessSection = screen.getByText('Base Happiness:').closest('.property-item');
+    expect(baseHappinessSection).toHaveTextContent('N/A');
   });
 
-  it('handles pokemon with no abilities', () => {
-    const emptyPokemon = {
-      ...mockPokemon,
-      abilities: [],
+  it('handles pokemon with null abilities', () => {
+    const pokemonWithNullAbilities = {
+      ...mockPokemonData,
+      abilities: null
+    };
+    
+    render(<PropertyCard data={pokemonWithNullAbilities} />);
+    
+    // Find the abilities section specifically
+    const abilitiesSection = screen.getByText('Abilities:').closest('.property-item');
+    expect(abilitiesSection).toHaveTextContent('N/A');
+  });
+
+  it('handles pokemon with empty abilities', () => {
+    const pokemonWithEmptyAbilities = {
+      ...mockPokemonData,
+      abilities: []
+    };
+    
+    render(<PropertyCard data={pokemonWithEmptyAbilities} />);
+    
+    // Find the abilities section specifically
+    const abilitiesSection = screen.getByText('Abilities:').closest('.property-item');
+    expect(abilitiesSection).toHaveTextContent('N/A');
+  });
+
+  it('handles pokemon with single ability', () => {
+    const pokemonWithSingleAbility = {
+      ...mockPokemonData,
+      abilities: [
+        {
+          ability: { name: 'static', url: 'https://pokeapi.co/api/v2/ability/9/' },
+          is_hidden: false,
+          slot: 1
+        }
+      ]
+    };
+    
+    render(<PropertyCard data={pokemonWithSingleAbility} />);
+    
+    expect(screen.getByText('Static')).toBeInTheDocument();
+  });
+
+  it('handles pokemon with hidden ability', () => {
+    const pokemonWithHiddenAbility = {
+      ...mockPokemonData,
+      abilities: [
+        {
+          ability: { name: 'lightning-rod', url: 'https://pokeapi.co/api/v2/ability/31/' },
+          is_hidden: true,
+          slot: 3
+        }
+      ]
+    };
+    
+    render(<PropertyCard data={pokemonWithHiddenAbility} />);
+    
+    expect(screen.getByText('Lightning-rod (Hidden)')).toBeInTheDocument();
+  });
+
+  it('handles pokemon with null types', () => {
+    const pokemonWithNullTypes = {
+      ...mockPokemonData,
+      types: null
+    };
+    
+    render(<PropertyCard data={pokemonWithNullTypes} />);
+    
+    // Find the types section specifically
+    const typesSection = screen.getByText('Types:').closest('.property-item');
+    expect(typesSection).toHaveTextContent('N/A');
+  });
+
+  it('handles pokemon with empty types', () => {
+    const pokemonWithEmptyTypes = {
+      ...mockPokemonData,
       types: []
     };
     
-    render(<PropertyCard data={emptyPokemon} speciesData={mockSpeciesData} />);
+    render(<PropertyCard data={pokemonWithEmptyTypes} />);
     
-    expect(screen.getByText(/Abilities/)).toBeInTheDocument();
-    expect(screen.getByText(/Types/)).toBeInTheDocument();
+    // Find the types section specifically
+    const typesSection = screen.getByText('Types:').closest('.property-item');
+    expect(typesSection).toHaveTextContent('N/A');
   });
 
-  it('handles pokemon with hidden abilities', () => {
-    const pokemonWithHiddenAbility = {
-      ...mockPokemon,
-      abilities: [
-        {
-          ability: { name: 'chlorophyll', url: 'https://pokeapi.co/api/v2/ability/34/' },
-          is_hidden: true,
-          slot: 3
-        }
+  it('handles pokemon with multiple types', () => {
+    const pokemonWithMultipleTypes = {
+      ...mockPokemonData,
+      types: [
+        { type: { name: 'electric', url: 'https://pokeapi.co/api/v2/type/13/' } },
+        { type: { name: 'flying', url: 'https://pokeapi.co/api/v2/type/3/' } }
       ]
     };
     
-    render(<PropertyCard data={pokemonWithHiddenAbility} speciesData={mockSpeciesData} />);
+    render(<PropertyCard data={pokemonWithMultipleTypes} />);
     
-    expect(screen.getByText(/Chlorophyll/)).toBeInTheDocument();
+    expect(screen.getByText('Electric, Flying')).toBeInTheDocument();
   });
 
-  it('handles pokemon with multiple abilities', () => {
-    const pokemonWithMultipleAbilities = {
-      ...mockPokemon,
+  it('handles pokemon type data with null damage relations', () => {
+    const typeDataWithNullDamageRelations = {
+      damage_relations: null
+    };
+    
+    render(<PropertyCard data={mockPokemonData} pokemonTypeData={typeDataWithNullDamageRelations} />);
+    
+    expect(screen.getByText('N/A')).toBeInTheDocument();
+  });
+
+  it('handles pokemon type data with null double damage from', () => {
+    const typeDataWithNullDoubleDamageFrom = {
+      damage_relations: {
+        double_damage_from: null
+      }
+    };
+    
+    render(<PropertyCard data={mockPokemonData} pokemonTypeData={typeDataWithNullDoubleDamageFrom} />);
+    
+    expect(screen.getByText('N/A')).toBeInTheDocument();
+  });
+
+  it('handles pokemon type data with empty double damage from', () => {
+    const typeDataWithEmptyDoubleDamageFrom = {
+      damage_relations: {
+        double_damage_from: []
+      }
+    };
+    
+    render(<PropertyCard data={mockPokemonData} pokemonTypeData={typeDataWithEmptyDoubleDamageFrom} />);
+    
+    expect(screen.getByText('N/A')).toBeInTheDocument();
+  });
+
+  it('handles pokemon type data with multiple weak types', () => {
+    const typeDataWithMultipleWeakTypes = {
+      damage_relations: {
+        double_damage_from: [
+          { name: 'ground' },
+          { name: 'rock' }
+        ]
+      }
+    };
+    
+    render(<PropertyCard data={mockPokemonData} pokemonTypeData={typeDataWithMultipleWeakTypes} />);
+    
+    expect(screen.getByText('Ground, Rock')).toBeInTheDocument();
+  });
+
+  it('handles pokemon with special characters in ability names', () => {
+    const pokemonWithSpecialAbilityNames = {
+      ...mockPokemonData,
       abilities: [
         {
-          ability: { name: 'overgrow', url: 'https://pokeapi.co/api/v2/ability/65/' },
+          ability: { name: 'pressure', url: 'https://pokeapi.co/api/v2/ability/46/' },
           is_hidden: false,
           slot: 1
-        },
-        {
-          ability: { name: 'chlorophyll', url: 'https://pokeapi.co/api/v2/ability/34/' },
-          is_hidden: true,
-          slot: 3
         }
       ]
     };
     
-    render(<PropertyCard data={pokemonWithMultipleAbilities} speciesData={mockSpeciesData} />);
+    render(<PropertyCard data={pokemonWithSpecialAbilityNames} />);
     
-    expect(screen.getByText(/Overgrow/)).toBeInTheDocument();
-    expect(screen.getByText(/Chlorophyll/)).toBeInTheDocument();
+    expect(screen.getByText('Pressure')).toBeInTheDocument();
   });
 
-  it('handles pokemon with extreme height and weight', () => {
-    const extremePokemon = {
-      ...mockPokemon,
-      height: 0,
-      weight: 999999
-    };
-    
-    render(<PropertyCard data={extremePokemon} speciesData={mockSpeciesData} />);
-    
-    expect(screen.getAllByText(/0\.0/)).toHaveLength(1); // Should find exactly one 0.0
-    expect(screen.getByText(/99999\.9/)).toBeInTheDocument();
-  });
-
-  it('handles pokemon with decimal height and weight', () => {
-    const decimalPokemon = {
-      ...mockPokemon,
-      height: 15,
-      weight: 123
-    };
-    
-    render(<PropertyCard data={decimalPokemon} speciesData={mockSpeciesData} />);
-    
-    expect(screen.getByText(/1\.5/)).toBeInTheDocument();
-    expect(screen.getByText(/12\.3/)).toBeInTheDocument();
-  });
-
-  it('handles species with single egg group', () => {
-    const singleEggGroupSpecies = {
-      ...mockSpeciesData,
-      egg_groups: [{ name: 'monster', url: 'https://pokeapi.co/api/v2/egg-group/1/' }]
-    };
-    
-    render(<PropertyCard data={mockPokemon} speciesData={singleEggGroupSpecies} />);
-    
-    expect(screen.getByText(/Monster/)).toBeInTheDocument();
-  });
-
-  it('handles species with many egg groups', () => {
-    const manyEggGroupsSpecies = {
-      ...mockSpeciesData,
-      egg_groups: [
-        { name: 'monster', url: 'https://pokeapi.co/api/v2/egg-group/1/' },
-        { name: 'plant', url: 'https://pokeapi.co/api/v2/egg-group/7/' },
-        { name: 'dragon', url: 'https://pokeapi.co/api/v2/egg-group/14/' }
+  it('handles pokemon with special characters in type names', () => {
+    const pokemonWithSpecialTypeNames = {
+      ...mockPokemonData,
+      types: [
+        { type: { name: 'fighting', url: 'https://pokeapi.co/api/v2/type/2/' } }
       ]
     };
     
-    render(<PropertyCard data={mockPokemon} speciesData={manyEggGroupsSpecies} />);
+    render(<PropertyCard data={pokemonWithSpecialTypeNames} />);
     
-    expect(screen.getByText(/Monster/)).toBeInTheDocument();
-    expect(screen.getByText(/Plant/)).toBeInTheDocument();
-    expect(screen.getByText(/Dragon/)).toBeInTheDocument();
+    expect(screen.getByText('Fighting')).toBeInTheDocument();
   });
 
-  it('handles pokemon with no base experience', () => {
-    const noExpPokemon = {
-      ...mockPokemon,
-      base_experience: null
+  it('handles pokemon with special characters in egg group names', () => {
+    const speciesDataWithSpecialEggGroupNames = {
+      ...mockSpeciesData,
+      egg_groups: [
+        { name: 'water-1', url: 'https://pokeapi.co/api/v2/egg-group/2/' }
+      ]
     };
     
-    render(<PropertyCard data={noExpPokemon} speciesData={mockSpeciesData} />);
+    render(<PropertyCard data={mockPokemonData} speciesData={speciesDataWithSpecialEggGroupNames} />);
     
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
-    // Use getAllByText since there are multiple N/A values
-    expect(screen.getAllByText('N/A')).toHaveLength(2); // Base Experience and Weak Against
+    expect(screen.getByText('Water-1')).toBeInTheDocument();
   });
 
-  it('handles pokemon with zero base experience', () => {
-    const zeroExpPokemon = {
-      ...mockPokemon,
-      base_experience: 0
+  it('handles pokemon with special characters in weak type names', () => {
+    const typeDataWithSpecialWeakTypeNames = {
+      damage_relations: {
+        double_damage_from: [
+          { name: 'ice' }
+        ]
+      }
     };
     
-    render(<PropertyCard data={zeroExpPokemon} speciesData={mockSpeciesData} />);
+    render(<PropertyCard data={mockPokemonData} pokemonTypeData={typeDataWithSpecialWeakTypeNames} />);
     
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
-    // The component shows 0 for base_experience when it's 0
-    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getByText('Ice')).toBeInTheDocument();
   });
 
-  it('handles pokemon with high base experience', () => {
-    const highExpPokemon = {
-      ...mockPokemon,
-      base_experience: 999999
+  it('handles empty string values', () => {
+    const pokemonWithEmptyStrings = {
+      ...mockPokemonData,
+      abilities: [
+        {
+          ability: { name: '', url: 'https://pokeapi.co/api/v2/ability/9/' },
+          is_hidden: false,
+          slot: 1
+        }
+      ],
+      types: [
+        { type: { name: '', url: 'https://pokeapi.co/api/v2/type/13/' } }
+      ]
     };
     
-    render(<PropertyCard data={highExpPokemon} speciesData={mockSpeciesData} />);
+    render(<PropertyCard data={pokemonWithEmptyStrings} />);
     
-    expect(screen.getByText(/Base Experience/)).toBeInTheDocument();
-    expect(screen.getByText('999999')).toBeInTheDocument();
+    // Since empty strings are handled by the component and return N/A, check for that
+    const abilitiesSection = screen.getByText('Abilities:').closest('.property-item');
+    expect(abilitiesSection).toHaveTextContent('N/A');
   });
 
-  it('handles null data props', () => {
-    render(<PropertyCard data={null} speciesData={null} />);
+  it('handles malformed data gracefully', () => {
+    const malformedPokemonData = {
+      ...mockPokemonData,
+      abilities: [
+        { invalid: 'data' }
+      ],
+      types: [
+        { invalid: 'data' }
+      ]
+    };
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
-    expect(screen.getAllByText(/0\.0/)).toHaveLength(2); // Height and Weight
-    expect(screen.getAllByText('N/A')).toHaveLength(4); // Base Experience, Abilities, Types, Weak Against
+    render(<PropertyCard data={malformedPokemonData} />);
+    
+    expect(screen.getByText('Properties')).toBeInTheDocument();
   });
 
-  it('handles undefined data props', () => {
-    render(<PropertyCard data={undefined} speciesData={undefined} />);
+  it('handles malformed species data gracefully', () => {
+    const malformedSpeciesData = {
+      ...mockSpeciesData,
+      egg_groups: [
+        { invalid: 'data' }
+      ]
+    };
     
-    expect(screen.getByText(/Height/)).toBeInTheDocument();
-    expect(screen.getAllByText(/0\.0/)).toHaveLength(2); // Height and Weight
-    expect(screen.getAllByText('N/A')).toHaveLength(4); // Base Experience, Abilities, Types, Weak Against
+    render(<PropertyCard data={mockPokemonData} speciesData={malformedSpeciesData} />);
+    
+    expect(screen.getByText('Properties')).toBeInTheDocument();
   });
 
-  it('handles missing pokemonTypeData', () => {
-    render(<PropertyCard data={mockPokemon} speciesData={mockSpeciesData} pokemonTypeData={null} />);
+  it('handles malformed type data gracefully', () => {
+    const malformedTypeData = {
+      damage_relations: {
+        double_damage_from: [
+          { invalid: 'data' }
+        ]
+      }
+    };
     
-    expect(screen.getByText(/Weak Against/)).toBeInTheDocument();
+    render(<PropertyCard data={mockPokemonData} pokemonTypeData={malformedTypeData} />);
+    
+    expect(screen.getByText('Properties')).toBeInTheDocument();
   });
 });

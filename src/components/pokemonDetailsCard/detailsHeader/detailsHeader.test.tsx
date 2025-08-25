@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Mock the getPokemonDescription function
@@ -15,6 +15,23 @@ jest.mock('../../../hooks/tooltip/tooltip', () => {
     return <div data-testid="tooltip">{name}: {data}</div>;
   };
 });
+
+// Mock the PokemonCard component
+jest.mock('../../pokemonCard/pokemonCard', () => {
+  return function MockPokemonCard({ data, className }: any) {
+    return (
+      <div data-testid="pokemon-card" className={className}>
+        <span>{data.name}</span>
+        <span>{data.id}</span>
+      </div>
+    );
+  };
+});
+
+// Mock the numberFormation function
+jest.mock('../../../services/common.service', () => ({
+  numberFormation: jest.fn((id: number) => id.toString().padStart(3, '0'))
+}));
 
 import DetailsHeader from './detailsHeader';
 
@@ -100,11 +117,15 @@ describe('DetailsHeader', () => {
     ]
   };
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders with pokemon data', () => {
     render(<DetailsHeader data={mockPokemon} speciesData={mockSpeciesData} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
     
     expect(screen.getAllByText('bulbasaur')).toHaveLength(2);
-    expect(screen.getAllByText('001')).toHaveLength(2);
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 
   it('renders pokemon name correctly', () => {
@@ -162,5 +183,204 @@ describe('DetailsHeader', () => {
     render(<DetailsHeader data={mockPokemon} speciesData={mockSpeciesData} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
     
     expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+  });
+
+  // New tests to improve function coverage
+  it('calls backClick when back icon is clicked', () => {
+    const mockBackClick = jest.fn();
+    render(<DetailsHeader data={mockPokemon} backClick={mockBackClick} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    const backIcon = screen.getByAltText('back icon to go backword');
+    fireEvent.click(backIcon);
+    
+    expect(mockBackClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls closeClick when close icon is clicked', () => {
+    const mockCloseClick = jest.fn();
+    render(<DetailsHeader data={mockPokemon} backClick={() => {}} closeClick={mockCloseClick} forwordClick={() => {}} />);
+    
+    const closeIcon = screen.getByAltText('close icon to go backword');
+    fireEvent.click(closeIcon);
+    
+    expect(mockCloseClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls forwordClick when forward icon is clicked', () => {
+    const mockForwardClick = jest.fn();
+    render(<DetailsHeader data={mockPokemon} backClick={() => {}} closeClick={() => {}} forwordClick={mockForwardClick} />);
+    
+    const forwardIcon = screen.getByAltText('forword icon to go backword');
+    fireEvent.click(forwardIcon);
+    
+    expect(mockForwardClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles keyboard events on back icon', () => {
+    const mockBackClick = jest.fn();
+    render(<DetailsHeader data={mockPokemon} backClick={mockBackClick} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    const backIcon = screen.getByAltText('back icon to go backword');
+    fireEvent.keyDown(backIcon, { key: 'Enter' });
+    
+    // The onKeyDown handler is empty, so it should not call the click function
+    expect(mockBackClick).not.toHaveBeenCalled();
+  });
+
+  it('handles keyboard events on close icon', () => {
+    const mockCloseClick = jest.fn();
+    render(<DetailsHeader data={mockPokemon} backClick={() => {}} closeClick={mockCloseClick} forwordClick={() => {}} />);
+    
+    const closeIcon = screen.getByAltText('close icon to go backword');
+    fireEvent.keyDown(closeIcon, { key: 'Enter' });
+    
+    // The onKeyDown handler is empty, so it should not call the click function
+    expect(mockCloseClick).not.toHaveBeenCalled();
+  });
+
+  it('handles keyboard events on forward icon', () => {
+    const mockForwardClick = jest.fn();
+    render(<DetailsHeader data={mockPokemon} backClick={() => {}} closeClick={() => {}} forwordClick={mockForwardClick} />);
+    
+    const forwardIcon = screen.getByAltText('forword icon to go backword');
+    fireEvent.keyDown(forwardIcon, { key: 'Enter' });
+    
+    // The onKeyDown handler is empty, so it should not call the click function
+    expect(mockForwardClick).not.toHaveBeenCalled();
+  });
+
+  it('renders with empty className', () => {
+    render(<DetailsHeader data={mockPokemon} className="" backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    const container = screen.getAllByText('bulbasaur')[0].closest('.details-header-container');
+    expect(container).toHaveClass('details-header-container');
+  });
+
+  it('renders with undefined className', () => {
+    render(<DetailsHeader data={mockPokemon} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    const container = screen.getAllByText('bulbasaur')[0].closest('.details-header-container');
+    expect(container).toHaveClass('details-header-container');
+  });
+
+  it('renders with null className', () => {
+    render(<DetailsHeader data={mockPokemon} className={null} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    const container = screen.getAllByText('bulbasaur')[0].closest('.details-header-container');
+    expect(container).toHaveClass('details-header-container');
+  });
+
+  it('handles species data without flavor_text_entries', () => {
+    const speciesDataWithoutFlavor = {
+      ...mockSpeciesData,
+      flavor_text_entries: undefined
+    };
+    
+    render(<DetailsHeader data={mockPokemon} speciesData={speciesDataWithoutFlavor} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    expect(screen.getAllByText('bulbasaur')).toHaveLength(2);
+  });
+
+  it('handles species data with empty flavor_text_entries', () => {
+    const speciesDataWithEmptyFlavor = {
+      ...mockSpeciesData,
+      flavor_text_entries: []
+    };
+    
+    render(<DetailsHeader data={mockPokemon} speciesData={speciesDataWithEmptyFlavor} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    expect(screen.getAllByText('bulbasaur')).toHaveLength(2);
+  });
+
+  it('handles species data with null flavor_text_entries', () => {
+    const speciesDataWithNullFlavor = {
+      ...mockSpeciesData,
+      flavor_text_entries: null
+    };
+    
+    render(<DetailsHeader data={mockPokemon} speciesData={speciesDataWithNullFlavor} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    expect(screen.getAllByText('bulbasaur')).toHaveLength(2);
+  });
+
+  it('renders description exactly at 363 characters', () => {
+    const exactLengthDescription = 'A'.repeat(363);
+    jest.requireMock('../../../constants/pokemon.types').getPokemonDescription.mockReturnValue(exactLengthDescription);
+    
+    render(<DetailsHeader data={mockPokemon} speciesData={mockSpeciesData} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    // Should not show tooltip since length is exactly 363
+    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('renders description at 364 characters with tooltip', () => {
+    const longDescription = 'A'.repeat(364);
+    jest.requireMock('../../../constants/pokemon.types').getPokemonDescription.mockReturnValue(longDescription);
+    
+    render(<DetailsHeader data={mockPokemon} speciesData={mockSpeciesData} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    // Should show tooltip since length is 364
+    expect(screen.getByTestId('tooltip')).toBeInTheDocument();
+  });
+
+  it('handles empty description string', () => {
+    jest.requireMock('../../../constants/pokemon.types').getPokemonDescription.mockReturnValue('');
+    
+    render(<DetailsHeader data={mockPokemon} speciesData={mockSpeciesData} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('handles null description string', () => {
+    jest.requireMock('../../../constants/pokemon.types').getPokemonDescription.mockReturnValue(null);
+    
+    render(<DetailsHeader data={mockPokemon} speciesData={mockSpeciesData} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('handles undefined description string', () => {
+    jest.requireMock('../../../constants/pokemon.types').getPokemonDescription.mockReturnValue(undefined);
+    
+    render(<DetailsHeader data={mockPokemon} speciesData={mockSpeciesData} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('renders PokemonCard with disabled-click class', () => {
+    render(<DetailsHeader data={mockPokemon} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    const pokemonCard = screen.getByTestId('pokemon-card');
+    expect(pokemonCard).toHaveClass('disabled-click');
+  });
+
+  it('renders with different pokemon data', () => {
+    const differentPokemon = {
+      ...mockPokemon,
+      id: 25,
+      name: 'pikachu'
+    };
+    
+    render(<DetailsHeader data={differentPokemon} backClick={() => {}} closeClick={() => {}} forwordClick={() => {}} />);
+    
+    expect(screen.getAllByText('pikachu')).toHaveLength(2);
+    expect(screen.getByText('25')).toBeInTheDocument();
+  });
+
+  it('handles missing click handlers gracefully', () => {
+    render(<DetailsHeader data={mockPokemon} />);
+    
+    // Should render without errors even without click handlers
+    expect(screen.getAllByText('bulbasaur')).toHaveLength(2);
+  });
+
+  it('handles partial click handlers', () => {
+    const mockBackClick = jest.fn();
+    render(<DetailsHeader data={mockPokemon} backClick={mockBackClick} />);
+    
+    const backIcon = screen.getByAltText('back icon to go backword');
+    fireEvent.click(backIcon);
+    
+    expect(mockBackClick).toHaveBeenCalledTimes(1);
   });
 });

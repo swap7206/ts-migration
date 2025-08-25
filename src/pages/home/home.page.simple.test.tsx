@@ -4,37 +4,37 @@ import '@testing-library/jest-dom';
 
 // Mock all dependencies
 jest.mock('../../components/header/header', () => {
-  return function MockHeader({ children }: any) {
-    return <div data-testid="header">{children}</div>;
-  };
+  const MockHeader = ({ children }: any) => <div data-testid="header">{children}</div>;
+  MockHeader.displayName = 'MockHeader';
+  return MockHeader;
 });
 
 jest.mock('../../components/pokemonCard/pokemonCard', () => {
-  return function MockPokemonCard({ data, onClick }: any) {
-    return (
-      <div data-testid="pokemon-card" onClick={onClick}>
-        {data?.name || 'Unknown'}
-      </div>
-    );
-  };
+  const MockPokemonCard = ({ data, onClick }: any) => (
+    <div data-testid="pokemon-card" onClick={onClick}>
+      {data?.name || 'Unknown'}
+    </div>
+  );
+  MockPokemonCard.displayName = 'MockPokemonCard';
+  return MockPokemonCard;
 });
 
 jest.mock('../../components/loader/loader', () => {
-  return function MockLoader() {
-    return <div data-testid="loader">Loading...</div>;
-  };
+  const MockLoader = () => <div data-testid="loader">Loading...</div>;
+  MockLoader.displayName = 'MockLoader';
+  return MockLoader;
 });
 
 jest.mock('../../components/filter/filter', () => {
-  return function MockFilter() {
-    return <div data-testid="filter">Filter</div>;
-  };
+  const MockFilter = () => <div data-testid="filter">Filter</div>;
+  MockFilter.displayName = 'MockFilter';
+  return MockFilter;
 });
 
 jest.mock('../details/details.page', () => {
-  return function MockDetailPage() {
-    return <div data-testid="detail-page">Detail Page</div>;
-  };
+  const MockDetailPage = () => <div data-testid="detail-page">Detail Page</div>;
+  MockDetailPage.displayName = 'MockDetailPage';
+  return MockDetailPage;
 });
 
 jest.mock('rsuite', () => ({

@@ -35,7 +35,7 @@ describe('Header - Simple Tests', () => {
 
   it('renders with default header class', () => {
     render(<Header>Test Content</Header>);
-    const header = screen.getByText('Test Content').parentElement;
+    const header = screen.getByRole('banner');
     expect(header).toHaveClass('header');
   });
 

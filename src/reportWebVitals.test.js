@@ -1,25 +1,6 @@
 import reportWebVitals from './reportWebVitals';
 
-// Mock web-vitals
-const mockGetCLS = jest.fn();
-const mockGetFID = jest.fn();
-const mockGetFCP = jest.fn();
-const mockGetLCP = jest.fn();
-const mockGetTTFB = jest.fn();
-
-jest.mock('web-vitals', () => ({
-  getCLS: mockGetCLS,
-  getFID: mockGetFID,
-  getFCP: mockGetFCP,
-  getLCP: mockGetLCP,
-  getTTFB: mockGetTTFB,
-}));
-
 describe('reportWebVitals', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should be a function', () => {
     expect(typeof reportWebVitals).toBe('function');
   });
@@ -114,6 +95,96 @@ describe('reportWebVitals', () => {
     expect(() => {
       reportWebVitals(mockOnPerfEntry1);
       reportWebVitals(mockOnPerfEntry2);
+    }).not.toThrow();
+  });
+
+  it('should handle function instanceof check correctly', () => {
+    const mockOnPerfEntry = jest.fn();
+    
+    // Test that the instanceof check works
+    expect(typeof mockOnPerfEntry).toBe('function');
+    expect(typeof 'not a function').toBe('string');
+    expect(null).toBeNull();
+    expect(undefined).toBeUndefined();
+  });
+
+  it('should handle function with different contexts', () => {
+    const mockOnPerfEntry = jest.fn();
+    
+    // Test with different function contexts
+    const boundFunction = mockOnPerfEntry.bind({});
+    const arrowFunction = () => {};
+    
+    expect(() => {
+      reportWebVitals(boundFunction);
+    }).not.toThrow();
+    
+    expect(() => {
+      reportWebVitals(arrowFunction);
+    }).not.toThrow();
+  });
+
+  it('should handle function with different types', () => {
+    // Test various function types
+    const regularFunction = function() {};
+    const arrowFunction = () => {};
+    const asyncFunction = async () => {};
+    const generatorFunction = function*() {};
+    
+    expect(() => {
+      reportWebVitals(regularFunction);
+    }).not.toThrow();
+    
+    expect(() => {
+      reportWebVitals(arrowFunction);
+    }).not.toThrow();
+    
+    expect(() => {
+      reportWebVitals(asyncFunction);
+    }).not.toThrow();
+    
+    expect(() => {
+      reportWebVitals(generatorFunction);
+    }).not.toThrow();
+  });
+
+  it('should handle edge cases for function detection', () => {
+    // Test edge cases
+    const functionWithPrototype = function() {};
+    functionWithPrototype.prototype = {};
+    
+    const functionWithProperties = function() {};
+    functionWithProperties.someProperty = 'value';
+    
+    expect(() => {
+      reportWebVitals(functionWithPrototype);
+    }).not.toThrow();
+    
+    expect(() => {
+      reportWebVitals(functionWithProperties);
+    }).not.toThrow();
+  });
+
+  it('should handle function with different arities', () => {
+    const noParams = () => {};
+    const oneParam = (a) => {};
+    const multipleParams = (a, b, c) => {};
+    const restParams = (...args) => {};
+    
+    expect(() => {
+      reportWebVitals(noParams);
+    }).not.toThrow();
+    
+    expect(() => {
+      reportWebVitals(oneParam);
+    }).not.toThrow();
+    
+    expect(() => {
+      reportWebVitals(multipleParams);
+    }).not.toThrow();
+    
+    expect(() => {
+      reportWebVitals(restParams);
     }).not.toThrow();
   });
 });

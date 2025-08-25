@@ -11,13 +11,17 @@ jest.mock('react-dom/client', () => ({
 
 // Mock the App component
 jest.mock('./App', () => {
-  return function MockApp() {
-    return <div data-testid="app">Mock App</div>;
+  const MockApp = function MockApp() {
+    return { type: 'div', props: { 'data-testid': 'app' }, children: 'Mock App' };
   };
+  return { __esModule: true, default: MockApp };
 });
 
 // Mock reportWebVitals
-jest.mock('./reportWebVitals', () => jest.fn());
+jest.mock('./reportWebVitals', () => {
+  const mockReportWebVitals = jest.fn();
+  return { __esModule: true, default: mockReportWebVitals };
+});
 
 // Mock CSS imports
 jest.mock('./index.css', () => ({}));
